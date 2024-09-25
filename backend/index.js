@@ -1,12 +1,12 @@
-// const bodyParser = require("body-parser");
+const bodyParser = require("body-parser");
 const express = require("express");
-// const dbConnect = require("./config/dbConnect");
-// const { notFound, errorHandler } = require("./middlewares/errorHandler");
+const dbConnect = require("./config/dbConnect");
+const { notFound, errorHandler } = require("./middlewares/errorHandler");
 const app = express();
 const dotenv = require("dotenv").config();
 const PORT = process.env.PORT || 4000;
 // const PORT = 5000;
-// const authRouter = require("./routes/authRoute");
+const authRouter = require("./routes/authRoute");
 // const productRouter = require("./routes/productRoute");
 // const blogRouter = require("./routes/blogRoute");
 // const categoryRouter = require("./routes/prodcategoryRoute");
@@ -20,13 +20,13 @@ const PORT = process.env.PORT || 4000;
 // const morgan = require("morgan");
 // const cors = require("cors");
 
-// dbConnect();
+dbConnect();
 // app.use(morgan("dev"));
 // app.use(cors());
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 // app.use(cookieParser());
-// app.use("/api/user", authRouter);
+
 // app.use("/api/product", productRouter);
 // app.use("/api/blog", blogRouter);
 // app.use("/api/category", categoryRouter);
@@ -37,13 +37,15 @@ const PORT = process.env.PORT || 4000;
 // app.use("/api/enquiry", enqRouter);
 // app.use("/api/upload", uploadRouter);
 
-// app.use(notFound);
+app.use("/api/user", authRouter);
+// app.use("/", (req, res) => {
+//     res.send("Hello from server side");
+// });
 
-// app.use(errorHandler);
+app.use(notFound);
+app.use(errorHandler);
 
-app.use("/", (req, res) => {
-    res.send("Hello from server side");
-});
+
 
 app.listen(PORT, () => {
   console.log(`Server is running  at PORT ${PORT}`);
