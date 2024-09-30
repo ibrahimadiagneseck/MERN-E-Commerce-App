@@ -52,6 +52,7 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
   const findUser = await User.findOne({ email });
   if (findUser && (await findUser.isPasswordMatched(password))) {
     const refreshToken = await generateRefreshToken(findUser?._id);
+
     const updateuser = await User.findByIdAndUpdate(
       findUser.id,
       {
@@ -59,10 +60,12 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
       },
       { new: true }
     );
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
     });
+
     res.json({
       _id: findUser?._id,
       firstname: findUser?.firstname,
@@ -98,10 +101,10 @@ const loginAdmin = asyncHandler(async (req, res) => {
       { new: true }
     );
 
-    // res.cookie("refreshToken", refreshToken, {
-    //   httpOnly: true,
-    //   maxAge: 72 * 60 * 60 * 1000,
-    // });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
 
     res.json({
       _id: findAdmin?._id,
@@ -119,9 +122,13 @@ const loginAdmin = asyncHandler(async (req, res) => {
 
 // handle refresh token
 const handleRefreshToken = asyncHandler(async (req, res) => {
+
   const cookie = req.cookies;
+
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
+
   const refreshToken = cookie.refreshToken;
+  
   const user = await User.findOne({ refreshToken });
   if (!user) throw new Error(" No Refresh token present in db or not matched");
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {

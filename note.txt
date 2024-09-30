@@ -1,0 +1,23 @@
+https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5 : 2:19
+
+(1h33)
+
+---------------------------------------------------------------------
+npm init
+npm i express mongoose bcrypt body-parser dotenv
+npm run server
+npm i nodemon --save-dev
+
+
+npm install uniqid
+npm install express-async-handler
+npm install jsonwebtoken
+npm install cookie-parser
+
+---------------------------------------------------------------------
+.env
+PORT=5000
+MONGODB_URL=mongodb://localhost:27017/digitic
+JWT_SECRET=123456
+
+

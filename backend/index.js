@@ -16,7 +16,7 @@ const authRouter = require("./routes/authRoute");
 // const enqRouter = require("./routes/enqRoute");
 // const couponRouter = require("./routes/couponRoute");
 // const uploadRouter = require("./routes/uploadRoute");
-// const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 // const morgan = require("morgan");
 // const cors = require("cors");
 
@@ -25,7 +25,7 @@ dbConnect();
 // app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-// app.use(cookieParser());
+app.use(cookieParser());
 
 // app.use("/api/product", productRouter);
 // app.use("/api/blog", blogRouter);

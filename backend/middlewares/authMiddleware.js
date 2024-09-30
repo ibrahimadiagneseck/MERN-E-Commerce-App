@@ -7,6 +7,7 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
 
   // Vérifie si l'en-tête d'autorisation commence par "Bearer"
   if (req?.headers?.authorization?.startsWith("Bearer")) {
+    
     // Extraction du token de l'en-tête
     token = req.headers.authorization.split(" ")[1];
 
