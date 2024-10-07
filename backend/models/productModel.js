@@ -6,7 +6,7 @@ var productSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true,
+      trim: true, // Supprime les espaces en début et en fin de chaîne
     },
     slug: {
       type: String,
@@ -28,6 +28,7 @@ var productSchema = new mongoose.Schema(
     },
     brand: {
       type: String,
+      // enum: ["Apple", "Samsung"],
       required: true,
     },
     quantity: {

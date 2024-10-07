@@ -1,6 +1,5 @@
 https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5 : 2:19
 
-(1h33)
 
 ---------------------------------------------------------------------
 npm init
@@ -13,11 +12,33 @@ npm install uniqid
 npm install express-async-handler
 npm install jsonwebtoken
 npm install cookie-parser
+npm install slugify
+npm install morgan 
+npm install nodemailer
 
 ---------------------------------------------------------------------
 .env
 PORT=5000
 MONGODB_URL=mongodb://localhost:27017/digitic
 JWT_SECRET=123456
+
+
+-----------------------------------------------------------------------
+
+Morgan est un middleware HTTP qui sert à logger (enregistrer) les requêtes HTTP qui passent par votre serveur, facilitant ainsi le suivi et le débogage.
+
+GET /api/products 200 47.237 ms - 124
+POST /api/login 401 35.642 ms - 12
+
+-----------------------------------------------------------------------
+
+slugify est une bibliothèque Node.js qui permet de convertir une chaîne de caractères en un "slug". Un slug est une version formatée d'un texte, souvent utilisée dans les URLs pour rendre celles-ci plus lisibles, conviviales et optimisées pour les moteurs de recherche (SEO).
+
+-----------------------------------------------------------------------
+
+
+
+
+
 
 

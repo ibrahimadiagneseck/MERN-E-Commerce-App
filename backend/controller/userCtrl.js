@@ -11,7 +11,7 @@ const validateMongoDbId = require("../utils/validateMongodbId");
 const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-// const sendEmail = require("./emailCtrl");
+const sendEmail = require("./emailCtrl");
 
 
 // Create a User ----------------------------------------------
@@ -319,7 +319,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
       subject: "Forgot Password Link",
       htm: resetURL,
     };
-    // sendEmail(data);
+    sendEmail(data);
     res.json(token);
   } catch (error) {
     throw new Error(error);
