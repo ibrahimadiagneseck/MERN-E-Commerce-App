@@ -78,7 +78,7 @@ const getAllProduct = asyncHandler(async (req, res) => {
     // Conversion des opérateurs (gte, gt, lte, lt) en syntaxe MongoDB
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    
+
     let query = Product.find(JSON.parse(queryStr));
 
     // Tri des résultats
@@ -157,6 +157,7 @@ const addToWishlist = asyncHandler(async (req, res) => {
 
 // Ajouter ou mettre à jour la note d'un produit
 const rating = asyncHandler(async (req, res) => {
+
   const { _id } = req.user; // Récupérer l'ID de l'utilisateur connecté
   const { star, prodId, comment } = req.body; // Récupérer les informations de la note et du commentaire
 

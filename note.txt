@@ -3,8 +3,10 @@ https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41
 
 ---------------------------------------------------------------------
 npm init
-npm i express mongoose bcrypt body-parser dotenv
+
 npm run server
+
+npm i express mongoose bcrypt body-parser dotenv
 npm i nodemon --save-dev
 
 
@@ -36,6 +38,17 @@ slugify est une bibliothèque Node.js qui permet de convertir une chaîne de car
 
 -----------------------------------------------------------------------
 
+http://localhost:5000/api/user/register (post)
+
+{
+    "firstname": "Ibrahima Diagne",
+    "lastname": "Seck",
+    "email": "ibrahimadiagneseck@esp.sn",
+    "mobile": "775211787",
+    "password": "ibrahima" 
+}
+
+-----------------------------------------------------------------------
 
 
 
