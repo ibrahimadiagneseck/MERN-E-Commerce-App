@@ -10,19 +10,55 @@ npm i express mongoose bcrypt body-parser dotenv
 npm i nodemon --save-dev
 
 
-npm install uniqid
-npm install express-async-handler
-npm install jsonwebtoken
-npm install cookie-parser
-npm install slugify
-npm install morgan 
-npm install nodemailer
+#### : npm install uniqid
+Ce package est utilisé pour générer des identifiants uniques pour des objets ou des fichiers.
+express-async-handler :
+
+#### : npm install express-async-handler
+Ce package permet de gérer plus facilement les erreurs dans les fonctions asynchrones utilisées avec Express. Il évite d'écrire manuellement des blocs try/catch dans les routes.
+jsonwebtoken :
+
+#### : npm install jsonwebtoken
+Ce package est utilisé pour créer et vérifier des JSON Web Tokens (JWT), souvent utilisés pour l'authentification dans les API.
+cookie-parser :
+
+#### : npm install cookie-parser
+Ce package analyse les cookies HTTP et les expose via req.cookies dans Express. Il est souvent utilisé pour gérer les cookies lors de l'authentification.
+slugify :
+
+#### : npm install slugify
+Ce package convertit une chaîne de caractères en une version "slug", c'est-à-dire une version formatée pour être utilisée dans les URLs (par exemple : "My Title" devient "my-title").
+morgan :
+
+#### : npm install morgan
+Un middleware pour Express qui journalise les requêtes HTTP, utile pour le débogage et le suivi des accès.
+nodemailer :
+
+#### : npm install nodemailer
+Ce package permet d'envoyer des emails depuis une application Node.js. Il prend en charge plusieurs services de messagerie, comme Gmail, et est utile pour des fonctionnalités comme l'envoi d'emails de confirmation ou de récupération de mot de passe.
+multer :
+
+#### : npm install multer
+Un middleware utilisé pour gérer le téléchargement de fichiers dans une application Express. Il est souvent utilisé pour gérer des fichiers envoyés via des formulaires HTML.
+sharp :
+
+#### : npm install sharp
+Ce package permet de manipuler des images de manière très rapide, comme les redimensionner, les convertir dans d'autres formats ou optimiser la qualité.
+cors :
+
+#### : npm install cors
+Ce middleware permet de configurer CORS (Cross-Origin Resource Sharing) dans une application Express, afin de gérer les autorisations d'accès entre différents domaines.
 
 ---------------------------------------------------------------------
 .env
 PORT=5000
 MONGODB_URL=mongodb://localhost:27017/digitic
 JWT_SECRET=123456
+MAIL_ID=ibrahima.251099@gmail.com
+MAIL_PASSWORD=abioslmpmfuktlbmb1
+CLOUD_NAME=dhqbziob9
+API_KEY=873353613798353
+SECRET_KEY=EoGazP9CMu5Nsudpr9WOyiJwv_c
 
 
 -----------------------------------------------------------------------
@@ -49,6 +85,10 @@ http://localhost:5000/api/user/register (post)
 }
 
 -----------------------------------------------------------------------
+
+https://console.cloudinary.com/pm/c-47598c595121790265eee26d1fe7da/getting-started
+
+npm i cloudinary
 
 
 
