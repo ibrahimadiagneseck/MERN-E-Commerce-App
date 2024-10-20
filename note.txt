@@ -89,9 +89,19 @@ http://localhost:5000/api/user/register (post)
 https://console.cloudinary.com/pm/c-47598c595121790265eee26d1fe7da/getting-started
 
 npm i cloudinary
+npm i uniqid
 
 
 
+----------------------------------------------------------------------------
 
+C:\Users\ibrah\Documents\GitHub\MERN E-Commerce App\backend\public
+
+create : images\products, images\blogs
+
+// properties : security : edit : full control //
+
+
+-----------------------------------------------------------------------------
 
 
