@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const asyncHandler = require("express-async-handler");
-const { process } = require("uniqid");
+// const { process } = require("uniqid");
 
 
 const sendEmail = asyncHandler(async (data, req, res) => {

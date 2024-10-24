@@ -21,7 +21,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 // Mettre à jour un produit existant
 const updateProduct = asyncHandler(async (req, res) => {
-  const id = req.params; // Récupérer l'ID du produit à partir des paramètres d'URL
+  const { id } = req.params; // Récupérer l'ID du produit à partir des paramètres d'URL
   validateMongoDbId(id); // Valider l'ID MongoDB
 
   try {
@@ -30,7 +30,7 @@ const updateProduct = asyncHandler(async (req, res) => {
       req.body.slug = slugify(req.body.title);
     }
     // Mettre à jour le produit dans la base de données
-    const updateProduct = await Product.findOneAndUpdate({ id }, req.body, {
+    const updateProduct = await Product.findOneAndUpdate({ _id: id }, req.body, {
       new: true, // Retourne le document mis à jour
     });
     res.json(updateProduct);
@@ -39,19 +39,24 @@ const updateProduct = asyncHandler(async (req, res) => {
   }
 });
 
+
 // Supprimer un produit
 const deleteProduct = asyncHandler(async (req, res) => {
-  const id = req.params; // Récupérer l'ID du produit à partir des paramètres d'URL
+  const { id } = req.params; // Récupérer l'ID du produit à partir des paramètres d'URL
   validateMongoDbId(id); // Valider l'ID MongoDB
 
   try {
     // Supprimer le produit de la base de données
-    const deleteProduct = await Product.findOneAndDelete(id);
-    res.json(deleteProduct);
+    const deleteProduct = await Product.findOneAndDelete({ _id: id });
+    if (!deleteProduct) {
+      return res.status(404).json({ message: "Produit non trouvé" });
+    }
+    res.json({ message: "Produit supprimé avec succès", deleteProduct });
   } catch (error) {
     throw new Error(error); // Gérer les erreurs
   }
 });
+
 
 // Récupérer un produit spécifique
 const getaProduct = asyncHandler(async (req, res) => {
@@ -70,51 +75,68 @@ const getaProduct = asyncHandler(async (req, res) => {
 // Récupérer tous les produits avec filtres, tri, limitation de champs et pagination
 const getAllProduct = asyncHandler(async (req, res) => {
   try {
-    // Filtrage des champs exclus
+    // Copie les paramètres de requête pour exclure certains champs
+    // On clone l'objet req.query pour éviter de modifier l'original
     const queryObj = { ...req.query };
-    const excludeFields = ["page", "sort", "limit", "fields"];
+    const excludeFields = ["page", "sort", "limit", "fields"]; // Champs à exclure des filtres (gérés séparément)
+    
+    // Supprimer les champs exclus des filtres de requête
     excludeFields.forEach((el) => delete queryObj[el]);
 
-    // Conversion des opérateurs (gte, gt, lte, lt) en syntaxe MongoDB
+    // Convertir les opérateurs (gte, gt, lte, lt) en syntaxe MongoDB
+    // Exemple: {price: {gte: 500}} devient {price: {$gte: 500}}
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
+    
+    // Effectuer la requête MongoDB avec les filtres transformés
     let query = Product.find(JSON.parse(queryStr));
 
-    // Tri des résultats
+    // Gestion du tri des résultats
     if (req.query.sort) {
+      // Si des critères de tri sont passés dans la requête, on les utilise
+      // Les critères sont séparés par des virgules, donc on les convertit en format MongoDB (espaces)
       const sortBy = req.query.sort.split(",").join(" ");
       query = query.sort(sortBy);
     } else {
-      query = query.sort("-createdAt"); // Par défaut, trier par date de création décroissante
+      // Par défaut, trier par date de création décroissante
+      query = query.sort("-createdAt");
     }
 
     // Limiter les champs retournés
     if (req.query.fields) {
+      // Sélectionne uniquement les champs spécifiques si 'fields' est fourni dans la requête
+      // On transforme la liste de champs séparés par des virgules en une chaîne avec des espaces pour MongoDB
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
     } else {
-      query = query.select("-__v"); // Exclure la version __v par défaut
+      // Par défaut, exclure le champ __v (qui correspond à la version du document dans Mongoose)
+      query = query.select("-__v");
     }
 
-    // Pagination
+    // Pagination des résultats
+    // Par exemple, si page=2 et limit=10, on saute les 10 premiers résultats pour afficher la page 2
     const page = req.query.page;
     const limit = req.query.limit;
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
 
-    // Vérification de la validité de la page
+    // Vérification si la page demandée existe
     if (req.query.page) {
+      // Compter le nombre total de documents pour valider la pagination
       const productCount = await Product.countDocuments();
+      // Si l'utilisateur demande une page qui dépasse le nombre de produits disponibles, on renvoie une erreur
       if (skip >= productCount) throw new Error("This Page does not exist");
     }
 
+    // Exécuter la requête finale et retourner les produits
     const product = await query;
     res.json(product);
   } catch (error) {
-    throw new Error(error); // Gérer les erreurs
+    // Si une erreur survient, elle est gérée ici et un message d'erreur est renvoyé
+    throw new Error(error);
   }
 });
+
 
 // Ajouter ou retirer un produit à/du wishlist d'un utilisateur
 const addToWishlist = asyncHandler(async (req, res) => {

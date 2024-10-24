@@ -1,4 +1,4 @@
-https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5 : 2:19
+https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5  1h44
 
 
 ---------------------------------------------------------------------
@@ -72,17 +72,7 @@ POST /api/login 401 35.642 ms - 12
 
 slugify est une bibliothèque Node.js qui permet de convertir une chaîne de caractères en un "slug". Un slug est une version formatée d'un texte, souvent utilisée dans les URLs pour rendre celles-ci plus lisibles, conviviales et optimisées pour les moteurs de recherche (SEO).
 
------------------------------------------------------------------------
 
-http://localhost:5000/api/user/register (post)
-
-{
-    "firstname": "Ibrahima Diagne",
-    "lastname": "Seck",
-    "email": "ibrahimadiagneseck@esp.sn",
-    "mobile": "775211787",
-    "password": "ibrahima" 
-}
 
 -----------------------------------------------------------------------
 
@@ -101,6 +91,300 @@ create : images\products, images\blogs
 
 // properties : security : edit : full control //
 
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/all-users (get)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/block-user/671574776caf0f701fb0ee87 (put)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/unblock-user/671574776caf0f701fb0ee87 (put)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/67163a90778d6012c4377a41 (delete)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/671574776caf0f701fb0ee87 (get)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/edit-user (put)
+
+{
+    "firstname": "Oumou Hawa 1",
+    "lastname": "Diallo 1",
+    "email": "oumouhawadiallo 1@esp.sn",
+    "mobile": "78410361700",
+    "password": "oumou1" 
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/password (put)
+
+{
+    "password": "ibrahima" 
+}
+
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/forgot-password-token (post)
+
+http://localhost:5000/api/user/reset-password/b4807036d13cf5e0544e2c5d665a94e897bdba919961ef8547c535eef6109121 (put)
+
+{
+    "password": "ibrahima" 
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/register (post)
+
+{
+    "firstname": "Ibrahima Diagne",
+    "lastname": "Seck",
+    "email": "ibrahimadiagneseck@esp.sn",
+    "mobile": "775211787",
+    "password": "ibrahima" 
+}
+
+{
+    "firstname": "Oumou Hawa",
+    "lastname": "Diallo",
+    "email": "oumouhawadiallo@esp.sn",
+    "mobile": "784103617",
+    "password": "oumou" 
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/login (post)
+
+{
+    "email": "ibrahimadiagneseck@esp.sn",
+    "password": "ibrahima"
+}
+
+{
+    "email": "oumouhawadiallo@esp.sn",
+    "password": "oumou" 
+}
+
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/product/67191fc218da15389eba64be (put)
+
+{
+    "title": "iPhone 14",
+    "slug": "iphone-14",
+    "description": "iPhone 14 avec un design élégant, des performances améliorées et un appareil photo de pointe.",
+    "price": 999.99,
+    "category": "Smartphones",
+    "brand": "Apple",
+    "quantity": 100,
+    "sold": 30,
+    "images": [
+        {
+            "public_id": "iphone14_img1",
+            "url": "https://example.com/images/iphone14_1.jpg",
+            "_id": "671904990d96793a40983b2d"
+        }
+    ],
+    "color": [
+        "Noir",
+        "Blanc",
+        "Rouge"
+    ],
+    "tags": "smartphone,apple,iphone",
+    "ratings": [
+        {
+            "star": 5,
+            "comment": "Incroyable expérience utilisateur !",
+            "postedby": "6510e1f9c9b1f09f1b43a92c",
+            "_id": "671904990d96793a40983b2e"
+        }
+    ],
+    "totalrating": "5"
+}
+
+-----------------------------------------------------------------------
+
+
+http://localhost:5000/api/product/671904990d96793a40983b2c (delete)
+
+-----------------------------------------------------------------------
+
+
+http://localhost:5000/api/product (get)
+
+http://localhost:5000/api/product?brand=Samsung&color=Noir&sort=price (get)
+
+http://localhost:5000/api/product?price[gte]=599.99 (get)
+
+http://localhost:5000/api/product?fields=title,price,category (get)
+
+http://localhost:5000/api/product?fields=-title,-price,-category (get)
+
+http://localhost:5000/api/product?page=2&limit=3 (get)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/product/67191fc218da15389eba64be (get)
+
+-----------------------------------------------------------------------
+
+
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/product (post)
+
+[
+    {
+    "title": "Google Pixel 7",
+    "slug": "google-pixel-7",
+    "description": "Google Pixel 7 est équipé d'un appareil photo de qualité professionnelle et une intégration optimale avec Google Assistant.",
+    "price": 799.99,
+    "category": "Smartphones",
+    "brand": "Google",
+    "quantity": 70,
+    "sold": 15,
+    "images": [
+      {
+        "public_id": "pixel7_img1",
+        "url": "https://example.com/images/pixel7_1.jpg"
+      }
+    ],
+    "color": ["Gris", "Blanc"],
+    "tags": "smartphone,google,pixel",
+    "ratings": [
+      {
+        "star": 4,
+        "comment": "Très bon rapport qualité/prix.",
+        "postedby": "6510e1f9c9b1f09f1b43a92c"
+      }
+    ],
+    "totalrating": 4
+},
+{
+    "title": "iPhone 14",
+    "slug": "iphone-14",
+    "description": "iPhone 14 avec un design élégant, des performances améliorées et un appareil photo de pointe.",
+    "price": 999.99,
+    "category": "Smartphones",
+    "brand": "Apple",
+    "quantity": 100,
+    "sold": 30,
+    "images": [
+      {
+        "public_id": "iphone14_img1",
+        "url": "https://example.com/images/iphone14_1.jpg"
+      }
+    ],
+    "color": ["Noir", "Blanc", "Rouge"],
+    "tags": "smartphone,apple,iphone",
+    "ratings": [
+      {
+        "star": 5,
+        "comment": "Incroyable expérience utilisateur !",
+        "postedby": "6510e1f9c9b1f09f1b43a92c"
+      }
+    ],
+    "totalrating": 5
+},
+{
+    "title": "Samsung Galaxy S23",
+    "slug": "samsung-galaxy-s23",
+    "description": "Samsung Galaxy S23 offre une performance exceptionnelle avec son écran AMOLED et un appareil photo polyvalent.",
+    "price": 899.99,
+    "category": "Smartphones",
+    "brand": "Samsung",
+    "quantity": 85,
+    "sold": 20,
+    "images": [
+      {
+        "public_id": "galaxyS23_img1",
+        "url": "https://example.com/images/galaxyS23_1.jpg"
+      }
+    ],
+    "color": ["Noir", "Vert", "Bleu"],
+    "tags": "smartphone,samsung,galaxy",
+    "ratings": [
+      {
+        "star": 4,
+        "comment": "Excellente autonomie de batterie.",
+        "postedby": "6510e1f9c9b1f09f1b43a92c"
+      }
+    ],
+    "totalrating": 4
+},
+{
+    "title": "OnePlus 11",
+    "slug": "oneplus-11",
+    "description": "OnePlus 11 est conçu pour une expérience de performance fluide avec une batterie longue durée et un écran AMOLED.",
+    "price": 749.99,
+    "category": "Smartphones",
+    "brand": "OnePlus",
+    "quantity": 50,
+    "sold": 10,
+    "images": [
+      {
+        "public_id": "oneplus11_img1",
+        "url": "https://example.com/images/oneplus11_1.jpg"
+      }
+    ],
+    "color": ["Noir", "Argent"],
+    "tags": "smartphone,oneplus,performance",
+    "ratings": [
+      {
+        "star": 4,
+        "comment": "Super téléphone pour les amateurs de technologie.",
+        "postedby": "6510e1f9c9b1f09f1b43a92c"
+      }
+    ],
+    "totalrating": 4
+},
+{
+    "title": "Sony Xperia 5 III",
+    "slug": "sony-xperia-5-iii",
+    "description": "Sony Xperia 5 III avec une caméra exceptionnelle et un écran OLED 120Hz, parfait pour les créateurs de contenu.",
+    "price": 899.99,
+    "category": "Smartphones",
+    "brand": "Sony",
+    "quantity": 40,
+    "sold": 8,
+    "images": [
+      {
+        "public_id": "xperia5_img1",
+        "url": "https://example.com/images/xperia5_1.jpg"
+      }
+    ],
+    "color": ["Noir", "Vert"],
+    "tags": "smartphone,sony,xperia",
+    "ratings": [
+      {
+        "star": 5,
+        "comment": "Une expérience incroyable pour la photographie mobile.",
+        "postedby": "6510e1f9c9b1f09f1b43a92c"
+      }
+    ],
+    "totalrating": 5
+}
+
+]
 
 -----------------------------------------------------------------------------
 

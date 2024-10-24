@@ -16,34 +16,50 @@ const sendEmail = require("./emailCtrl");
 
 // Create a User ----------------------------------------------
 const createUser = asyncHandler(async (req, res) => {
-  /**
-   * TODO:Get the email from req.body
-   */
-  const email = req.body.email;
-  /**
-   * TODO:With the help of email find the user exists or not
-   */
-  const findUser = await User.findOne({ email: email });
+  try {
+    // TODO: Get the email from req.body
+    const { email } = req.body;
 
-  if (!findUser) {
-    /**
-     * TODO:if user not found user create a new user
-     */
+    // Check if email is provided
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: "Email is required",
+      });
+    }
+
+    // TODO: Find if the user exists with the provided email
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      // TODO: If user found, throw an error: User already exists
+      return res.status(409).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // TODO: If user not found, create a new user
     const newUser = await User.create(req.body);
-    res.json(newUser);
-  } else {
-    /**
-     * TODO:if user found then thow an error: User already exists
-     */
-    
-    // res.json({
-    //   msg: "User Already Exists",
-    //   success: false
-    // });
 
-    throw new Error("User Already Exists");
+    res.json(newUser);
+
+    // Send success response with the newly created user
+    // res.status(201).json({
+    //   success: true,
+    //   message: "User created successfully",
+    //   data: newUser,
+    // });
+  } catch (error) {
+    // Catch and handle any errors during user creation process
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error",
+    });
   }
 });
+
+
 
 // Login a user
 const loginUserCtrl = asyncHandler(async (req, res) => {
@@ -143,25 +159,29 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
 // logout functionality
 const logout = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
+  // Vérifie si le cookie contient le refreshToken
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
   const refreshToken = cookie.refreshToken;
+  // Recherche l'utilisateur avec le refreshToken
   const user = await User.findOne({ refreshToken });
+  // Si aucun utilisateur n'est trouvé, on nettoie le cookie et on retourne un statut 204
   if (!user) {
     res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: true,
+      secure: true, // pour HTTPS, à enlever pour développement local
     });
-    return res.sendStatus(204); // forbidden
+    return res.sendStatus(204); // No Content
   }
-  await User.findOneAndUpdate(refreshToken, {
-    refreshToken: "",
-  });
+  // Mise à jour de l'utilisateur en retirant le refreshToken
+  await User.findOneAndUpdate({ refreshToken }, { refreshToken: "" });
+  // Nettoie le cookie contenant le refreshToken
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: true,
+    secure: true, // pour HTTPS, à enlever pour développement local
   });
-  res.sendStatus(204); // forbidden
+  res.sendStatus(204); // No Content
 });
+
 
 // Update a user
 const updatedUser = asyncHandler(async (req, res) => {
@@ -263,7 +283,10 @@ const blockUser = asyncHandler(async (req, res) => {
         new: true,
       }
     );
-    res.json(blockusr);
+    // res.json(blockusr);
+    res.json({
+      message: "User Blocked",
+    });
   } catch (error) {
     throw new Error(error);
   }
@@ -317,7 +340,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
       to: email,
       text: "Hey User",
       subject: "Forgot Password Link",
-      htm: resetURL,
+      html: resetURL,
     };
     sendEmail(data);
     res.json(token);
@@ -327,20 +350,41 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
+  // Récupère le mot de passe dans le corps de la requête
   const { password } = req.body;
+
+  // Récupère le token de réinitialisation depuis les paramètres de l'URL
   const { token } = req.params;
+
+  // Hache le token récupéré en utilisant l'algorithme SHA-256
+  // Cela permet de comparer ce token haché avec celui stocké dans la base de données
   const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // Cherche l'utilisateur dans la base de données avec le token haché
+  // et vérifie si le token n'a pas expiré (passwordResetExpires doit être supérieur à la date actuelle)
   const user = await User.findOne({
     passwordResetToken: hashedToken,
-    passwordResetExpires: { $gt: Date.now() },
+    passwordResetExpires: { $gt: Date.now() }, // Si la date d'expiration est dépassée, le token n'est plus valide
   });
-  if (!user) throw new Error(" Token Expired, Please try again later");
+
+  // Si aucun utilisateur n'est trouvé (soit à cause du token invalide ou expiré), une erreur est levée
+  if (!user) throw new Error("Token Expired, Please try again later");
+
+  // Si un utilisateur est trouvé, le mot de passe de l'utilisateur est mis à jour avec le nouveau mot de passe fourni
   user.password = password;
+
+  // On efface le token et la date d'expiration de réinitialisation du mot de passe
+  // car ils ne sont plus nécessaires une fois le mot de passe réinitialisé
   user.passwordResetToken = undefined;
   user.passwordResetExpires = undefined;
+
+  // Sauvegarde l'utilisateur avec le nouveau mot de passe dans la base de données
   await user.save();
+
+  // Renvoie une réponse JSON contenant les informations de l'utilisateur
   res.json(user);
 });
+
 
 const getWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
