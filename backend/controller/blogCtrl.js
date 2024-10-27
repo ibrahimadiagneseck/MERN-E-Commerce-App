@@ -31,9 +31,12 @@ const getBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
   try {
+     
+    // Récupère le blog par son ID et remplace les ID des utilisateurs par leurs informations complètes
     const getBlog = await Blog.findById(id)
-      .populate("likes")
-      .populate("dislikes");
+    .populate("likes")     // Remplace chaque ID dans 'likes' par les documents complets des utilisateurs correspondants
+    .populate("dislikes");  // Remplace chaque ID dans 'dislikes' par les documents complets des utilisateurs correspondants
+
     const updateViews = await Blog.findByIdAndUpdate(
       id,
       {
@@ -46,6 +49,7 @@ const getBlog = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 const getAllBlogs = asyncHandler(async (req, res) => {
   try {
     const getBlogs = await Blog.find();
@@ -86,6 +90,14 @@ const liketheBlog = asyncHandler(async (req, res) => {
   const alreadyDisliked = blog?.dislikes?.find(
     (userId) => userId?.toString() === loginUserId?.toString()
   );
+
+  // Vérification si l'utilisateur a déjà liké ou disliké le blog
+  // const isLiked = blog?.likes?.some(
+  //   (userId) => userId.toString() === loginUserId.toString()
+  // );
+  // const alreadyDisliked = blog?.dislikes?.some(
+  //   (userId) => userId.toString() === loginUserId.toString()
+  // );
 
   // Si l'utilisateur a déjà disliké le blog, retirer le dislike
   if (alreadyDisliked) {

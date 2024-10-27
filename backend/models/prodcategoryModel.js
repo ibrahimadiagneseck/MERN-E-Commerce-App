@@ -4,10 +4,10 @@ const mongoose = require("mongoose"); // Erase if already required
 var prodcategorySchema = new mongoose.Schema(
   {
     title: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
+      type: String,       // Type de données : chaîne de caractères
+      required: true,      // Champ requis : ne peut pas être vide
+      unique: true,        // Doit être unique : empêche les doublons de noms de catégories
+      index: true,         // Indexé pour accélérer les recherches
     },
   },
   {

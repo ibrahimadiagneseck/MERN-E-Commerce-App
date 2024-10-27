@@ -192,18 +192,25 @@ const rating = asyncHandler(async (req, res) => {
     );
 
     if (alreadyRated) {
-      // Mettre à jour la note et le commentaire existants
+      // Mise à jour de la notation d'un produit avec de nouveaux détails d'évaluation
       const updateRating = await Product.updateOne(
         {
+          // Critère de recherche : recherche un produit dont l'un des éléments de l'attribut `ratings` correspond à `alreadyRated`
+          // `$ elemMatch` vérifie si un élément dans le tableau `ratings` correspond à la condition définie dans `alreadyRated`
           ratings: { $elemMatch: alreadyRated },
         },
         {
+          // Action de mise à jour : `ratings.$` cible l'élément correspondant dans `ratings` (là où `$ elemMatch` a trouvé une correspondance)
+          // `$ set` permet de modifier les champs spécifiques de l'élément ciblé
+          // Mise à jour de la note (`star`) et du commentaire (`comment`) pour l'élément trouvé
           $set: { "ratings.$.star": star, "ratings.$.comment": comment },
         },
         {
+          // Option de configuration : retourne le document mis à jour après la modification
           new: true,
         }
       );
+
     } else {
       // Ajouter une nouvelle note pour ce produit
       const rateProduct = await Product.findByIdAndUpdate(
