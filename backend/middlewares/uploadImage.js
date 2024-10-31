@@ -48,6 +48,13 @@ const productImgResize = async (req, res, next) => {
         .toFile(`public/images/products/${file.filename}`); // Sauvegarder le fichier redimensionné
 
       fs.unlinkSync(`public/images/products/${file.filename}`); // Supprimer l'image d'origine pour libérer de l'espace
+    //   fs.unlink(`public/images/products/${file.filename}`, (err) => {
+    //     if (err) {
+    //         console.error('Error while deleting file:', err);
+    //         return;
+    //     }
+    //     console.log('File deleted successfully');
+    // });
     })
   );
   next(); // Passer au middleware suivant

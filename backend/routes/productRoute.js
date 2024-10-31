@@ -7,9 +7,20 @@ const {
   deleteProduct,
   addToWishlist,
   rating,
+  uploadImages
 } = require("../controller/productCtrl");
+const { productImgResize, uploadPhoto } = require("../middlewares/uploadImage"); // Importation des middlewares pour le traitement des images
 const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const router = express.Router();
+
+router.put(
+  "/upload/:id",
+  authMiddleware,
+  isAdmin,
+  uploadPhoto.array("images", 2), // Limite à 2 images
+  productImgResize, // Middleware pour redimensionner les images
+  uploadImages // Fonction pour gérer l'upload des images
+);
 
 router.post("/", authMiddleware, isAdmin, createProduct);
 

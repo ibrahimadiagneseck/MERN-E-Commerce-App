@@ -3,6 +3,9 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler"); // Gère les erreurs de manière asynchrone
 const slugify = require("slugify"); // Génère des slugs à partir des titres de produits
 const validateMongoDbId = require("../utils/validateMongodbId"); // Valide les ID MongoDB
+const { cloudinaryUploadImg } = require("../utils/cloudinary");
+
+const fs = require("fs");
 
 // Créer un nouveau produit
 const createProduct = asyncHandler(async (req, res) => {
@@ -186,6 +189,14 @@ const rating = asyncHandler(async (req, res) => {
   try {
     const product = await Product.findById(prodId); // Trouver le produit par son ID
 
+     // Vérifier si le produit existe
+     if (!product) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Produit non trouvé",
+      });
+    }
+
     // Vérifier si l'utilisateur a déjà noté ce produit
     let alreadyRated = product.ratings.find(
       (userId) => userId.postedby.toString() === _id.toString()
@@ -211,6 +222,8 @@ const rating = asyncHandler(async (req, res) => {
         }
       );
 
+      // res.json(updateRating);
+
     } else {
       // Ajouter une nouvelle note pour ce produit
       const rateProduct = await Product.findByIdAndUpdate(
@@ -228,6 +241,8 @@ const rating = asyncHandler(async (req, res) => {
           new: true,
         }
       );
+
+      // res.json(rateProduct);
     }
 
     // Calculer la nouvelle note moyenne
@@ -236,19 +251,51 @@ const rating = asyncHandler(async (req, res) => {
     let ratingsum = getallratings.ratings
       .map((item) => item.star)
       .reduce((prev, curr) => prev + curr, 0);
-    let actualRating = Math.round(ratingsum / totalRating);
+    let actualRating = totalRating > 0 ? Math.round(ratingsum / totalRating) : 0; // entier arrondi pour actualRating
+
 
     // Mettre à jour la note totale du produit
-    let finalproduct = await Product.findByIdAndUpdate(
+    let finalProduct = await Product.findByIdAndUpdate(
       prodId,
       {
         totalrating: actualRating,
       },
       { new: true }
     );
-    res.json(finalproduct);
+    res.json(finalProduct);
   } catch (error) {
     throw new Error(error); // Gérer les erreurs
+  }
+});
+
+const uploadImages = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    const urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      console.log(newpath);
+      urls.push(newpath);
+      fs.unlinkSync(path);
+    }
+    const findBlog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(findBlog);
+  } catch (error) {
+    throw new Error(error);
   }
 });
 
@@ -261,4 +308,5 @@ module.exports = {
   deleteProduct,
   addToWishlist,
   rating,
+  uploadImages
 };

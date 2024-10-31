@@ -1,4 +1,4 @@
-https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5  5h59
+https://www.youtube.com/watch?v=S6Yd5cPtXr4&list=PL0g02APOH8okXhOQLOLcB_nifs1U41im5  6h16
 
 
 ---------------------------------------------------------------------
@@ -76,20 +76,7 @@ slugify est une bibliothèque Node.js qui permet de convertir une chaîne de car
 
 -----------------------------------------------------------------------
 
-https://console.cloudinary.com/pm/c-47598c595121790265eee26d1fe7da/getting-started
 
-npm i cloudinary
-npm i uniqid
-
-
-
-----------------------------------------------------------------------------
-
-C:\Users\ibrah\Documents\GitHub\MERN E-Commerce App\backend\public
-
-create : images\products, images\blogs
-
-// properties : security : edit : full control //
 
 
 -----------------------------------------------------------------------
@@ -184,39 +171,21 @@ http://localhost:5000/api/user/login (post)
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-http://localhost:5000/api/product/67191fc218da15389eba64be (put)
+http://localhost:5000/api/product/rating (put)
 
 {
-    "title": "iPhone 14",
-    "slug": "iphone-14",
-    "description": "iPhone 14 avec un design élégant, des performances améliorées et un appareil photo de pointe.",
-    "price": 999.99,
-    "category": "Smartphones",
-    "brand": "Apple",
-    "quantity": 100,
-    "sold": 30,
-    "images": [
-        {
-            "public_id": "iphone14_img1",
-            "url": "https://example.com/images/iphone14_1.jpg",
-            "_id": "671904990d96793a40983b2d"
-        }
-    ],
-    "color": [
-        "Noir",
-        "Blanc",
-        "Rouge"
-    ],
-    "tags": "smartphone,apple,iphone",
-    "ratings": [
-        {
-            "star": 5,
-            "comment": "Incroyable expérience utilisateur !",
-            "postedby": "6510e1f9c9b1f09f1b43a92c",
-            "_id": "671904990d96793a40983b2e"
-        }
-    ],
-    "totalrating": "5"
+    "star": 5,
+    "prodId": "67191fc218da15389eba64be",
+    "comment": "Très bon produit"
+}
+
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/product/wishlist (put)
+
+{
+    "prodId": "671e40c7a2d602e470d0db59"
 }
 
 -----------------------------------------------------------------------
@@ -578,9 +547,70 @@ http://localhost:5000/api/brand/671e4253a2d602e470d0db72 (get)
 
 
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+
+http://localhost:5000/api/coupon (post)
+
+{
+    "name": "HOLI",
+    "expiry": "Mon, 28 Oct 2024 12:20:29 GMT",
+    "discount": 30
+}
 
 
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+https://console.cloudinary.com/pm/c-47598c595121790265eee26d1fe7da/getting-started
+
+npm i cloudinary
+npm i uniqid
 
 
+
+----------------------------------------------------------------------------
+
+C:\Users\ibrah\Documents\GitHub\MERN E-Commerce App\backend\public
+
+create : images\products, images\blogs
+
+// properties : security : edit : full control //
+
+
+// ------------------- oubien -------------------- //
+
+cliquez avec le bouton droit de la souris sur Invite de commande et sélectionnez Exécuter en tant qu'administrateur : npm run server
+
+// ------------------- oubien -------------------- //
+
+icacls "C:\Users\ibrah\Documents\GitHub\MERN E-Commerce App\backend\public\*" /grant ibrah:F /T
+
+
+----------------------------------------------------------------------------
+
+
+http://localhost:5000/api/upload (post)
+http://localhost:5000/api/product/upload (put)
+http://localhost:5000/api/blog/upload (put)
+
+form-data : images:files
+
+
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 
