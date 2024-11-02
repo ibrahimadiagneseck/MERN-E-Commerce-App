@@ -590,11 +590,9 @@ create : images\products, images\blogs
 
 // ------------------- oubien -------------------- //
 
-cliquez avec le bouton droit de la souris sur Invite de commande et sélectionnez Exécuter en tant qu'administrateur : npm run server
+rimraf pour supprimer un fichier. Cette méthode est souvent plus sûre car rimraf gère les verrous de fichiers de manière plus efficace
+### npm install rimraf
 
-// ------------------- oubien -------------------- //
-
-icacls "C:\Users\ibrah\Documents\GitHub\MERN E-Commerce App\backend\public\*" /grant ibrah:F /T
 
 
 ----------------------------------------------------------------------------

@@ -27,7 +27,7 @@ const uploadImages = asyncHandler(async (req, res) => {
       const newpath = await uploader(path); // Téléverse l'image sur Cloudinary et récupère le nouveau chemin (URL)
       console.log(newpath); // Affiche l'URL de l'image dans la console
       urls.push(newpath); // Ajoute l'URL de l'image dans le tableau
-      fs.unlinkSync(path); // Supprime l'image temporaire du serveur après téléversement
+      // fs.unlinkSync(path); // Supprime l'image temporaire du serveur après téléversement
     }
 
     // Crée un tableau d'images à partir des URLs

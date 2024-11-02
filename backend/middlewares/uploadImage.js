@@ -2,12 +2,14 @@ const multer = require("multer"); // Importer la bibliothèque multer pour la ge
 const sharp = require("sharp"); // Importer sharp pour le traitement des images
 const path = require("path"); // Importer path pour travailler avec les chemins de fichiers
 const fs = require("fs"); // Importer le système de fichiers pour manipuler les fichiers
+const { log } = require("console");
 
 // Configuration du stockage pour multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // Définir le dossier de destination pour les fichiers téléchargés
-    cb(null, path.join(__dirname, "../public/images/")); // Dossier de destination
+    cb(null, path.join(__dirname, "../public/images/images/")); // Dossier de destination
+    // cb(null, "public/images/images/"); // Dossier de destination
   },
   filename: function (req, file, cb) {
     // Définir le nom de fichier à utiliser lors de la sauvegarde
@@ -33,31 +35,43 @@ const uploadPhoto = multer({
   limits: { fileSize: 1000000 }, // Limite de taille de fichier (1 Mo)
 });
 
+
+
+
 // Middleware pour redimensionner les images des produits
 const productImgResize = async (req, res, next) => {
+
   // Vérifier s'il n'y a pas de fichiers téléchargés
   if (!req.files) return next(); // Passer au middleware suivant si aucun fichier
 
-  // Traiter chaque fichier téléchargé
+  // Redimensionner chaque image et sauvegarder temporairement
   await Promise.all(
     req.files.map(async (file) => {
-      await sharp(file.path) // Utiliser sharp pour redimensionner l'image
-        .resize(300, 300) // Redimensionner l'image à 300x300 pixels
-        .toFormat("jpeg") // Convertir en format JPEG
-        .jpeg({ quality: 90 }) // Définir la qualité à 90%
-        .toFile(`public/images/products/${file.filename}`); // Sauvegarder le fichier redimensionné
 
-      fs.unlinkSync(`public/images/products/${file.filename}`); // Supprimer l'image d'origine pour libérer de l'espace
-    //   fs.unlink(`public/images/products/${file.filename}`, (err) => {
-    //     if (err) {
-    //         console.error('Error while deleting file:', err);
-    //         return;
-    //     }
-    //     console.log('File deleted successfully');
-    // });
+      const filePathResize = `public/images/products/${file.filename}`;
+
+      await sharp(file.path)
+        .resize(300, 300)
+        .toFormat("jpeg")
+        .jpeg({ quality: 90 })
+        .toFile(filePathResize); // Sauvegarder le fichier redimensionné
+
+        
+        // Supprimer le fichier d'origine avant redimensionnement
+      // fs.unlinkSync(file.path);
+      // -----------------------------------------------------------------
+      // fs.unlink(file.path, (err) => {
+      //   if (err) console.error("Erreur lors de la suppression du fichier :", err);
+      // });
+
+
+      // Mettre à jour le chemin du fichier pour qu'il pointe vers le fichier redimensionné, pour cloudinaryUploadImg
+      file.path = filePathResize;
+
     })
   );
-  next(); // Passer au middleware suivant
+
+  next(); // Passer au middleware suivant (uploadImages)
 };
 
 // Middleware pour redimensionner les images des blogs
@@ -74,11 +88,12 @@ const blogImgResize = async (req, res, next) => {
         .jpeg({ quality: 90 }) // Définir la qualité à 90%
         .toFile(`public/images/blogs/${file.filename}`); // Sauvegarder le fichier redimensionné
 
-      fs.unlinkSync(`public/images/blogs/${file.filename}`); // Supprimer l'image d'origine pour libérer de l'espace
+          fs.unlinkSync(`public/images/blogs/${file.filename}`); // Supprimer l'image d'origine pour libérer de l'espace
     })
   );
   next(); // Passer au middleware suivant
 };
+
 
 // Exporter les fonctions pour les utiliser dans d'autres fichiers
 module.exports = { uploadPhoto, productImgResize, blogImgResize }; // Exporter les middlewares

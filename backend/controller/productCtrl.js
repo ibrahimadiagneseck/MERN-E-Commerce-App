@@ -268,32 +268,43 @@ const rating = asyncHandler(async (req, res) => {
   }
 });
 
+
 const uploadImages = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
+
   try {
     const uploader = (path) => cloudinaryUploadImg(path, "images");
     const urls = [];
     const files = req.files;
+
+    // Uploader les fichiers redimensionnés vers Cloudinary
     for (const file of files) {
-      const { path } = file;
-      const newpath = await uploader(path);
+
+      // const { path } = file;
+      // const newpath = await uploader(path);
+
+      const newpath = await uploader(file.path);
       console.log(newpath);
       urls.push(newpath);
-      fs.unlinkSync(path);
+
+      // Supprimer l'image  redimensionnée une fois uploadée
+      fs.unlinkSync(file.path);
+
     }
-    const findBlog = await Blog.findByIdAndUpdate(
+
+    // Mettre à jour le produit avec les URLs des images
+    const findProduct = await Product.findByIdAndUpdate(
       id,
       {
-        images: urls.map((file) => {
-          return file;
-        }),
+        images: urls.map((file) => file),
       },
       {
         new: true,
       }
     );
-    res.json(findBlog);
+    res.json(findProduct);
+
   } catch (error) {
     throw new Error(error);
   }

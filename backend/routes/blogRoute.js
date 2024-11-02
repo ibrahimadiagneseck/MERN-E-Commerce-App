@@ -25,8 +25,8 @@ router.put(
   authMiddleware,
   isAdmin,
   uploadPhoto.array("images", 2), // Limite à 2 images
+  uploadImages, // Fonction pour gérer l'upload des images
   blogImgResize, // Middleware pour redimensionner les images
-  uploadImages // Fonction pour gérer l'upload des images
 );
 
 // Route pour liker un blog (accessible par un utilisateur authentifié)
