@@ -11,7 +11,7 @@ router.post(
   isAdmin, // Vérifie que l'utilisateur a les droits d'administrateur, garantissant que seuls les administrateurs peuvent télécharger des images.
   uploadPhoto.array("images", 10), // Utilise `uploadPhoto` pour gérer le téléchargement de fichiers et spécifie que jusqu'à 10 images peuvent être envoyées dans le champ `images`.
   uploadImages, // Fonction finale qui prend les images téléchargées et les traite en les enregistrant dans la base de données ou le stockage approprié.
-  productImgResize, // Redimensionne les images téléchargées pour répondre aux exigences de taille et de qualité de l'application.
+  // productImgResize, // Redimensionne les images téléchargées pour répondre aux exigences de taille et de qualité de l'application.
 );
 
 router.delete("/delete-img/:id", authMiddleware, isAdmin, deleteImages);

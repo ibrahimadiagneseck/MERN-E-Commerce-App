@@ -86,15 +86,62 @@ slugify est une bibliothèque Node.js qui permet de convertir une chaîne de car
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
 
-
+http://localhost:5000/api/user/wishlist (get)
 http://localhost:5000/api/user/all-users (get)
 http://localhost:5000/api/user/671574776caf0f701fb0ee87 (get)
 http://localhost:5000/api/user/67163a90778d6012c4377a41 (delete)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/save-address (put)
+
+{
+    "address": "AMITIE 2"
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/cart (get)
+http://localhost:5000/api/user/empty-cart (delete)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/get-orders (get)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/cart (post)
+
+{
+    "cart": [
+        {
+            "_id": "67191fc218da15389eba64be",
+            "count": 3,
+            "color": "noir"
+        }
+    ]
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/cart/cash-order (post)
+
+{
+    "COD": true,
+    "couponApplied": true
+}
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/user/order/update-order/67277deb6e49f5eb265483ec (put)
+
+{
+    "status": "Processing"
+}
+
 -----------------------------------------------------------------------
 
 http://localhost:5000/api/user/block-user/671574776caf0f701fb0ee87 (put)
-
------------------------------------------------------------------------
 
 http://localhost:5000/api/user/unblock-user/671574776caf0f701fb0ee87 (put)
 
@@ -205,6 +252,40 @@ http://localhost:5000/api/product?fields=title,price,category (get)
 http://localhost:5000/api/product?fields=-title,-price,-category (get)
 
 http://localhost:5000/api/product?page=2&limit=3 (get)
+
+-----------------------------------------------------------------------
+
+http://localhost:5000/api/product (post)
+
+{
+    "title": "iPhone x",
+    "slug": "iphone-x",
+    "description": "iPhone 16 avec un design élégant, des performances améliorées et un appareil photo de pointe.",
+    "price": 599.99,
+    "category": "Smartphones",
+    "brand": "Apple",
+    "quantity": 100,
+    "sold": 30,
+    "images": [],
+    "color": [
+        "67279795bfdf211712f454f3",
+        "67279795bfdf211712f454f4",
+        "67279795bfdf211712f454fa"
+    ],
+    "tags": [
+        "featured",
+        "popular"
+    ],
+    "ratings": [
+        {
+            "star": 5,
+            "comment": "Incroyable expérience utilisateur !",
+            "postedby": "6510e1f9c9b1f09f1b43a92c",
+            "_id": "671904990d96793a40983b2e"
+        }
+    ],
+    "totalrating": "5"
+}
 
 -----------------------------------------------------------------------
 
@@ -546,6 +627,55 @@ http://localhost:5000/api/brand (get)
 http://localhost:5000/api/brand/671e4253a2d602e470d0db72 (get)
 
 
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
+
+
+http://localhost:5000/api/color (post)
+
+[
+  {
+    "title": "Noir"
+  },
+  {
+    "title": "Blanc"
+  },
+  {
+    "title": "Jaune"
+  },
+  {
+    "title": "Bleu"
+  },
+  {
+    "title": "Rouge"
+  },
+  {
+    "title": "Vert"
+  },
+  {
+    "title": "Gris"
+  },
+  {
+    "title": "violet"
+  },
+  {
+    "title": "Orange"
+  }
+]
+
+
+
+-----------------------------------------------------------------------
+
+
+http://localhost:5000/api/color (get)
+
+http://localhost:5000/api/color/671e4253a2d602e470d0db72 (get)
+
 
 -----------------------------------------------------------------------
 -----------------------------------------------------------------------
@@ -603,6 +733,13 @@ http://localhost:5000/api/product/upload (put)
 http://localhost:5000/api/blog/upload (put)
 
 form-data : images:files
+
+
+----------------------------------------------------------------------------
+
+http://localhost:5000/api/product/delete-image/p9cvjtjtvk7rdy59j5ii (delete)
+
+http://localhost:5000/api/product/upload/ (put) 
 
 
 -----------------------------------------------------------------------

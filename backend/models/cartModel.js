@@ -1,30 +1,31 @@
-const mongoose = require("mongoose"); // Erase if already required
+const mongoose = require("mongoose"); // Importe mongoose pour gérer les interactions avec MongoDB
 
-// Declare the Schema of the Mongo model
+// Déclare le schéma pour le modèle MongoDB Cart (Panier)
 var cartSchema = new mongoose.Schema(
   {
+    // Définition du champ products, qui est un tableau contenant des objets avec les informations des produits
     products: [
       {
         product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          type: mongoose.Schema.Types.ObjectId, // Référence à l'ID d'un document dans la collection "Product"
+          ref: "Product", // Définit la référence pour les jointures (population) sur le modèle "Product"
         },
-        count: Number,
-        color: String,
-        price: Number,
+        count: Number, // Quantité du produit ajouté au panier
+        color: String, // Couleur du produit (optionnel)
+        price: Number, // Prix du produit au moment de l'ajout au panier
       },
     ],
-    cartTotal: Number,
-    totalAfterDiscount: Number,
+    cartTotal: Number, // Total du panier sans remise
+    totalAfterDiscount: Number, // Total du panier après application d'une éventuelle remise
     orderby: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: mongoose.Schema.Types.ObjectId, // Référence à l'ID d'un document dans la collection "User"
+      ref: "User", // Définit la référence pour les jointures sur le modèle "User"
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // Ajoute automatiquement les champs createdAt et updatedAt pour suivre la date de création et de modification
   }
 );
 
-//Export the model
+// Exporte le modèle "Cart" basé sur cartSchema pour l'utiliser dans d'autres fichiers
 module.exports = mongoose.model("Cart", cartSchema);

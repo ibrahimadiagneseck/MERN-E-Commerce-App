@@ -71,13 +71,17 @@ const productImgResize = async (req, res, next) => {
     })
   );
 
+
   next(); // Passer au middleware suivant (uploadImages)
 };
 
 // Middleware pour redimensionner les images des blogs
 const blogImgResize = async (req, res, next) => {
+
   // Vérifier s'il n'y a pas de fichiers téléchargés
   if (!req.files) return next(); // Passer au middleware suivant si aucun fichier
+
+  const filePathResize = `public/images/blogs/${file.filename}`;
 
   // Traiter chaque fichier téléchargé
   await Promise.all(
@@ -86,9 +90,10 @@ const blogImgResize = async (req, res, next) => {
         .resize(300, 300) // Redimensionner l'image à 300x300 pixels
         .toFormat("jpeg") // Convertir en format JPEG
         .jpeg({ quality: 90 }) // Définir la qualité à 90%
-        .toFile(`public/images/blogs/${file.filename}`); // Sauvegarder le fichier redimensionné
+        .toFile(filePathResize); // Sauvegarder le fichier redimensionné
 
-          fs.unlinkSync(`public/images/blogs/${file.filename}`); // Supprimer l'image d'origine pour libérer de l'espace
+        // Mettre à jour le chemin du fichier pour qu'il pointe vers le fichier redimensionné, pour cloudinaryUploadImg
+      file.path = filePathResize;
     })
   );
   next(); // Passer au middleware suivant

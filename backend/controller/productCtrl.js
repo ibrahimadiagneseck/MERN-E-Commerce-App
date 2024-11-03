@@ -3,7 +3,7 @@ const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler"); // Gère les erreurs de manière asynchrone
 const slugify = require("slugify"); // Génère des slugs à partir des titres de produits
 const validateMongoDbId = require("../utils/validateMongodbId"); // Valide les ID MongoDB
-const { cloudinaryUploadImg } = require("../utils/cloudinary");
+const { cloudinaryUploadImg, cloudinaryDeleteImg } = require("../utils/cloudinary");
 
 const fs = require("fs");
 
@@ -269,20 +269,31 @@ const rating = asyncHandler(async (req, res) => {
 });
 
 
-const uploadImages = asyncHandler(async (req, res) => {
+const deleteImages = asyncHandler(async (req, res) => {
+
   const { id } = req.params;
-  validateMongoDbId(id);
+
+  try {
+    const deleted = cloudinaryDeleteImg(id, "images");
+    res.json({ message: "Deleted" })
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const uploadImages = asyncHandler(async (req, res) => {
 
   try {
     const uploader = (path) => cloudinaryUploadImg(path, "images");
     const urls = [];
     const files = req.files;
 
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "Aucun fichier trouvé à uploader" });
+    }
+
     // Uploader les fichiers redimensionnés vers Cloudinary
     for (const file of files) {
-
-      // const { path } = file;
-      // const newpath = await uploader(path);
 
       const newpath = await uploader(file.path);
       console.log(newpath);
@@ -293,22 +304,57 @@ const uploadImages = asyncHandler(async (req, res) => {
 
     }
 
-    // Mettre à jour le produit avec les URLs des images
-    const findProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        images: urls.map((file) => file),
-      },
-      {
-        new: true,
-      }
-    );
-    res.json(findProduct);
+    const images = urls.map((file) => {
+      return file;
+    });
+
+    res.json(images);
 
   } catch (error) {
     throw new Error(error);
   }
 });
+
+
+// const uploadImages = asyncHandler(async (req, res) => {
+//   const { id } = req.params;
+//   validateMongoDbId(id);
+
+//   try {
+//     const uploader = (path) => cloudinaryUploadImg(path, "images");
+//     const urls = [];
+//     const files = req.files;
+
+//     // Uploader les fichiers redimensionnés vers Cloudinary
+//     for (const file of files) {
+
+//       const newpath = await uploader(file.path);
+//       console.log(newpath);
+//       urls.push(newpath);
+
+//       // Supprimer l'image  redimensionnée une fois uploadée
+//       fs.unlinkSync(file.path);
+
+//     }
+
+//     // Mettre à jour le produit avec les URLs des images
+//     const findProduct = await Product.findByIdAndUpdate(
+//       id,
+//       {
+//         images: urls.map((file) => file),
+//       },
+//       {
+//         new: true,
+//       }
+//     );
+//     res.json(findProduct);
+
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+
 
 // Export des fonctions pour les utiliser dans d'autres fichiers
 module.exports = {
@@ -319,5 +365,6 @@ module.exports = {
   deleteProduct,
   addToWishlist,
   rating,
-  uploadImages
+  uploadImages,
+  deleteImages
 };

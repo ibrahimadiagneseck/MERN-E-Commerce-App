@@ -205,43 +205,60 @@ const disliketheBlog = asyncHandler(async (req, res) => {
 
 const uploadImages = asyncHandler(async (req, res) => {
 
-  const { id } = req.params;
-  validateMongoDbId(id);
+  // const { id } = req.params;
+  // validateMongoDbId(id);
 
   try {
 
     const uploader = (path) => cloudinaryUploadImg(path, "images");
     const urls = [];
-    // const pathsToDelete = []; // Liste des chemins des fichiers à supprimer
     const files = req.files;
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "Aucun fichier trouvé à uploader" });
+    }
 
     for (const file of files) {
       const { path } = file;
       const newpath = await uploader(path);
       console.log(newpath);
       urls.push(newpath);
-      fs.unlinkSync(path);
-      // pathsToDelete.push(path);
 
-      // let formattedPath = path.replace(/\\/g, '\\\\');
+      // Supprimer l'image  redimensionnée une fois uploadée
+      fs.unlinkSync(file.path);
+
+
 
       // Supprime le fichier local en utilisant deleteFileWithRetry
       // deleteFileWithRetry(path, 3, 5000); // Remove-Item .\images-1730476257385-137675023.jpeg -Force
 
     }
 
-    const findBlog = await Blog.findByIdAndUpdate(
-      id,
-      {
-        images: urls.map((file) => {
-          return file;
-        }),
-      },
-      {
-        new: true,
-      }
-    );
-    res.json(findBlog);
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
+
+    const images = urls.map((file) => {
+      return file;
+    });
+
+    res.json(images);
+
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
+
+    // const findBlog = await Blog.findByIdAndUpdate(
+    //   id,
+    //   {
+    //     images: urls.map((file) => {
+    //       return file;
+    //     }),
+    //   },
+    //   {
+    //     new: true,
+    //   }
+    // );
+
+    // res.json(findBlog);
   } catch (error) {
     throw new Error(error);
   }

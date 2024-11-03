@@ -4,12 +4,16 @@ const validateMongoDbId = require("../utils/validateMongodbId");
 
 const createColor = asyncHandler(async (req, res) => {
   try {
+    
+    // const existingColor = await Color.findOne({ title: new RegExp(`^${title}$`, "i") });
+
     const newColor = await Color.create(req.body);
     res.json(newColor);
   } catch (error) {
     throw new Error(error);
   }
 });
+
 const updateColor = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);

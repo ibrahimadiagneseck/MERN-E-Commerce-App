@@ -144,7 +144,7 @@ const handleRefreshToken = asyncHandler(async (req, res) => {
   if (!cookie?.refreshToken) throw new Error("No Refresh Token in Cookies");
 
   const refreshToken = cookie.refreshToken;
-  
+
   const user = await User.findOne({ refreshToken });
   if (!user) throw new Error(" No Refresh token present in db or not matched");
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
@@ -388,6 +388,7 @@ const resetPassword = asyncHandler(async (req, res) => {
 
 const getWishlist = asyncHandler(async (req, res) => {
   const { _id } = req.user;
+  validateMongoDbId(_id);
   try {
     const findUser = await User.findById(_id).populate("wishlist");
     res.json(findUser);
@@ -396,41 +397,78 @@ const getWishlist = asyncHandler(async (req, res) => {
   }
 });
 
+// Middleware pour gérer le panier de l'utilisateur
 const userCart = asyncHandler(async (req, res) => {
+
+  // Récupère le panier depuis le corps de la requête et l'ID utilisateur depuis la requête (après authentification)
   const { cart } = req.body;
   const { _id } = req.user;
+
+  // Vérifie si l'ID utilisateur est valide en utilisant une fonction de validation d'ID MongoDB
   validateMongoDbId(_id);
+
   try {
+    // Initialise un tableau vide pour stocker les produits du panier
     let products = [];
+
+    // Récupère l'utilisateur depuis la base de données en fonction de son ID
     const user = await User.findById(_id);
-    // check if user already have product in cart
+
+    // Vérifie si le panier existe déjà pour cet utilisateur
     const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+
+    // Si un panier existe déjà, il est supprimé pour en créer un nouveau
     if (alreadyExistCart) {
-      alreadyExistCart.remove();
+      alreadyExistCart.deleteOne();
     }
+
+    // Boucle sur chaque produit dans le panier pour structurer les informations nécessaires
     for (let i = 0; i < cart.length; i++) {
       let object = {};
+
+      // Associe l'ID, la quantité et la couleur du produit
       object.product = cart[i]._id;
       object.count = cart[i].count;
       object.color = cart[i].color;
-      let getPrice = await Product.findById(cart[i]._id).select("price").exec();
+
+      // Récupère uniquement le champ "price" du produit spécifié par son ID dans le panier
+      let getPrice = await Product
+        .findById(cart[i]._id) // Recherche le produit par son ID dans la base de données
+        .select("price")       // Sélectionne uniquement le champ "price" pour optimiser la requête
+        .exec();               // Exécute la requête et attend le résultat avec "await"
+
+
+      // Associe le prix récupéré au produit
       object.price = getPrice.price;
+
+      // Ajoute le produit structuré au tableau des produits
       products.push(object);
     }
+
+    // Initialise la variable de calcul du total du panier
     let cartTotal = 0;
+
+    // Boucle sur les produits pour calculer le total du panier (prix * quantité pour chaque produit)
     for (let i = 0; i < products.length; i++) {
       cartTotal = cartTotal + products[i].price * products[i].count;
     }
+
+    // Crée un nouveau panier avec les produits, le total et l'utilisateur qui a passé la commande
     let newCart = await new Cart({
       products,
       cartTotal,
       orderby: user?._id,
-    }).save();
+    }).save(); // Sauvegarde le panier dans la base de données
+
+    // Retourne le panier nouvellement créé en réponse
     res.json(newCart);
+
   } catch (error) {
+    // En cas d'erreur, lance une nouvelle erreur pour la gestion des erreurs
     throw new Error(error);
   }
 });
+
 
 const getUserCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -449,93 +487,155 @@ const emptyCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
   try {
+    // Recherche l'utilisateur par son ID
     const user = await User.findOne({ _id });
-    const cart = await Cart.findOneAndRemove({ orderby: user._id });
+
+    // Utilise findOneAndDelete pour supprimer le panier associé à l'utilisateur
+    const cart = await Cart.findOneAndDelete({ orderby: user._id });
+
+    // Retourne la réponse avec le contenu du panier supprimé
     res.json(cart);
   } catch (error) {
+    // Lève une erreur si quelque chose se passe mal
     throw new Error(error);
   }
 });
 
+
 const applyCoupon = asyncHandler(async (req, res) => {
+
   const { coupon } = req.body;
   const { _id } = req.user;
+  
   validateMongoDbId(_id);
+
+  // Cherche le coupon correspondant au nom donné dans la base de données
   const validCoupon = await Coupon.findOne({ name: coupon });
+
+  // Si le coupon n'existe pas, génère une erreur pour informer l'utilisateur que le coupon est invalide
   if (validCoupon === null) {
     throw new Error("Invalid Coupon");
   }
+
+  // Récupère l'utilisateur correspondant à l'ID
   const user = await User.findOne({ _id });
+
+  // Récupère le total actuel du panier de l'utilisateur en recherchant un panier associé à cet utilisateur
   let { cartTotal } = await Cart.findOne({
     orderby: user._id,
-  }).populate("products.product");
+  }).populate("products.product"); // Charge également les détails des produits du panier
+
+  // Calcule le total après application de la remise du coupon
+  // La remise est calculée en fonction du pourcentage `discount` contenu dans le coupon
   let totalAfterDiscount = (
     cartTotal -
     (cartTotal * validCoupon.discount) / 100
-  ).toFixed(2);
+  ).toFixed(2); // Utilise toFixed pour formater le résultat à deux décimales
+
+  // Met à jour le panier de l'utilisateur avec le nouveau total après remise
   await Cart.findOneAndUpdate(
     { orderby: user._id },
     { totalAfterDiscount },
-    { new: true }
+    { new: true } // Retourne le document mis à jour
   );
+
+  // Envoie le total après remise en réponse à la requête
   res.json(totalAfterDiscount);
 });
 
+
 const createOrder = asyncHandler(async (req, res) => {
+
+  // Récupère le type de paiement "Cash on Delivery" (COD) et si un coupon est appliqué
   const { COD, couponApplied } = req.body;
+
   const { _id } = req.user;
+
   validateMongoDbId(_id);
+
   try {
+
+    // Si le paiement par COD n'est pas fourni, génère une erreur
     if (!COD) throw new Error("Create cash order failed");
+
+    // Recherche l'utilisateur dans la base de données avec son ID
     const user = await User.findById(_id);
+
+    // Récupère le panier de l'utilisateur en fonction de l'ID utilisateur
     let userCart = await Cart.findOne({ orderby: user._id });
+
+    // Initialise le montant final de la commande
     let finalAmout = 0;
+
+    // Détermine le montant final en tenant compte de la réduction si un coupon est appliqué
     if (couponApplied && userCart.totalAfterDiscount) {
       finalAmout = userCart.totalAfterDiscount;
     } else {
       finalAmout = userCart.cartTotal;
     }
 
+    // Crée un nouvel objet de commande avec les détails du panier
     let newOrder = await new Order({
-      products: userCart.products,
+      products: userCart.products, // Les produits commandés
       paymentIntent: {
-        id: uniqid(),
-        method: "COD",
-        amount: finalAmout,
-        status: "Cash on Delivery",
-        created: Date.now(),
-        currency: "usd",
+        id: uniqid(),               // Génère un identifiant unique pour la commande
+        method: "COD",              // Méthode de paiement (Cash on Delivery)
+        amount: finalAmout,         // Montant final de la commande
+        status: "Cash on Delivery", // Statut du paiement
+        created: Date.now(),        // Date de création
+        currency: "usd",            // Devise de paiement
       },
-      orderby: user._id,
-      orderStatus: "Cash on Delivery",
+      orderby: user._id,            // Identifiant de l'utilisateur ayant passé la commande
+      orderStatus: "Cash on Delivery", // Statut de la commande
     }).save();
+
+    // Met à jour les stocks et les ventes pour chaque produit dans le panier
     let update = userCart.products.map((item) => {
       return {
         updateOne: {
-          filter: { _id: item.product._id },
-          update: { $inc: { quantity: -item.count, sold: +item.count } },
+          filter: { _id: item.product._id }, // Trouve le produit correspondant
+          update: { 
+            $inc: { 
+              quantity: -item.count,  // Diminue la quantité en stock en fonction de la quantité commandée
+              sold: +item.count       // Augmente le nombre d'unités vendues
+            }
+          },
         },
       };
     });
+
+    // Applique les mises à jour sur les produits en une seule requête avec `bulkWrite`
     const updated = await Product.bulkWrite(update, {});
+
+    // Envoie une réponse JSON confirmant le succès de la commande
     res.json({ message: "success" });
+
   } catch (error) {
+    // Gère les erreurs et les renvoie
     throw new Error(error);
   }
 });
 
+
 const getOrders = asyncHandler(async (req, res) => {
+
   const { _id } = req.user;
+
   validateMongoDbId(_id);
+
   try {
+
     const userorders = await Order.findOne({ orderby: _id })
       .populate("products.product")
       .populate("orderby")
       .exec();
+
     res.json(userorders);
+
   } catch (error) {
     throw new Error(error);
   }
+
 });
 
 const getAllOrders = asyncHandler(async (req, res) => {
@@ -549,6 +649,7 @@ const getAllOrders = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 const getOrderByUserId = asyncHandler(async (req, res) => {
   const { id } = req.params;
   validateMongoDbId(id);
@@ -562,6 +663,7 @@ const getOrderByUserId = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   const { id } = req.params;
