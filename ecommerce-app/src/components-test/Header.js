@@ -88,8 +88,20 @@ const Header = () => {
                 <div className="container-xxl">
                     <div className="row">
                         <div className="col-12">
-                            <div className="menu-bottom d-flex align-items-center">
-                                <div></div>
+                            <div className="menu-bottom d-flex align-items-center gap-30">
+                                <div>
+                                    <div class="dropdown">
+                                        <button className="btn btn-secondary dropdown-toggle bg-transparent border-0 gap-15 d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <img src="images/menu.svg" alt="" />
+                                            <span className="me-5 d-inline-block">Shop Categories</span>
+                                        </button>
+                                        <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                            <li><Link className="dropdown-item text-white" href="#">Action</Link></li>
+                                            <li><Link className="dropdown-item text-white" href="#">Another action</Link></li>
+                                            <li><Link className="dropdown-item text-white" href="#">Something else here</Link></li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <div className="menu-links">
                                     <div className="d-flex align-items-center gap-15">
                                         <NavLink to="/">Home</NavLink>

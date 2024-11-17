@@ -41,10 +41,38 @@ a {
 }
 
 
-.header-bottom .menu-links a {
+.header-bottom .menu-links a, 
+.header-bottom .dropdown button {
   color: white;
-}
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  letter-spacing: 0.3;
+  /* text-emphasis: none; *//* Supprime toute mise en évidence textuelle (non standard ou mal utilisée ici, aucun effet attendu) */
+  text-transform: uppercase;
+} 
 
+.header-bottom .dropdown button:focus {
+  box-shadow: none;
+} 
+
+.header-bottom .dropdown-menu {
+  background-color: var(--color-212529);
+  width: 100%;
+  transform: translate3d(0px, 57px, 0px) !important; /* Déplace l'élément de 57px vers le bas sur l'axe Y avec accélération matérielle, priorité forcée. */
+
+} 
+
+.header-bottom .dropdown-item {
+  padding: 20px;
+  margin-bottom: 3px;
+  border-bottom: 1px solid var(--color-212529);
+} 
+
+.header-bottom .dropdown-item:hover {
+  background-color: transparent;
+  color: var(--color-ffd333) !important;
+} 
 
 .header-upper .input-group-text {
   background-color: var(--color-ffd333);
@@ -62,6 +90,11 @@ a {
 .gap-15 {
   gap: 15px;
 }
+
+.gap-30 {
+  gap: 30px;
+}
+
 
 /* Header Part */
 
