@@ -1,0 +1,49 @@
++-------------------+       +-------------------+       +-------------------+
+|    BCategory      |       |      Brand        |       |      Color        |
++-------------------+       +-------------------+       +-------------------+
+| title: String     |       | title: String     |       | title: String     |
++-------------------+       +-------------------+       +-------------------+
+
++-------------------+       +-------------------+       +-------------------+
+|     Coupon        |       |    Enquiry        |       |    PCategory      |
++-------------------+       +-------------------+       +-------------------+
+| name: String      |       | name: String      |       | title: String     |
+| expiry: Date      |       | email: String     |       +-------------------+
+| discount: Number  |       | mobile: String    |
++-------------------+       | comment: String   |
+                            | status: String    |
+                            +-------------------+
+
++-------------------+       +-------------------+       +-------------------+
+|      Order        |       |     Product       |       |      User         |
++-------------------+       +-------------------+       +-------------------+
+| products: Array   |<----->| title: String     |<----->| firstname: String |
+| paymentIntent: Obj|       | slug: String      |       | lastname: String  |
+| orderStatus: String|      | description: String|      | email: String     |
+| orderby: ObjectId |       | price: Number     |       | mobile: String    |
++-------------------+       | category: String  |       | password: String  |
+                            | brand: String     |       | role: String      |
+                            | quantity: Number  |       | isBlocked: Boolean|
+                            | sold: Number      |       | cart: Array       |
+                            | images: Array     |       | address: String   |
+                            | color: Array      |       | wishlist: Array   |
+                            | tags: Array       |       | refreshToken: String|
+                            | ratings: Array    |       | passwordChangedAt: Date|
+                            | totalrating: String|      | passwordResetToken: String|
+                            +-------------------+       | passwordResetExpires: Date|
+                                                       +-------------------+
+
++-------------------+       +-------------------+
+|      Blog         |       |      Cart         |
++-------------------+       +-------------------+
+| title: String     |       | products: Array   |
+| description: String|      | cartTotal: Number |
+| category: String  |       | totalAfterDiscount: Number|
+| numViews: Number  |       | orderby: ObjectId |
+| isLiked: Boolean  |       +-------------------+
+| isDisliked: Boolean|
+| likes: Array      |
+| dislikes: Array   |
+| author: String    |
+| images: Array     |
++-------------------+

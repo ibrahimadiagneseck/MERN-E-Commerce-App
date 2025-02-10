@@ -1,0 +1,117 @@
+@startuml
+' #######################################################
+' # Diagramme de classe pour les modèles MongoDB        #
+' # Commentaires en français pour les noms des tables   #
+' #######################################################
+
+' Table : Catégorie de Blog
+class BCategory {
+  title: String
+}
+
+' Table : Blog
+class Blog {
+  title: String
+  description: String
+  category: String
+  numViews: Number
+  isLiked: Boolean
+  isDisliked: Boolean
+  likes: Array
+  dislikes: Array
+  author: String
+  images: Array
+}
+
+' Table : Marque
+class Brand {
+  title: String
+}
+
+' Table : Panier
+class Cart {
+  products: Array
+  cartTotal: Number
+  totalAfterDiscount: Number
+  orderby: ObjectId
+}
+
+' Table : Couleur
+class Color {
+  title: String
+}
+
+' Table : Coupon
+class Coupon {
+  name: String
+  expiry: Date
+  discount: Number
+}
+
+' Table : Demande de renseignements
+class Enquiry {
+  name: String
+  email: String
+  mobile: String
+  comment: String
+  status: String
+}
+
+' Table : Commande
+class Order {
+  products: Array
+  paymentIntent: Object
+  orderStatus: String
+  orderby: ObjectId
+}
+
+' Table : Catégorie de Produit
+class PCategory {
+  title: String
+}
+
+' Table : Produit
+class Product {
+  title: String
+  slug: String
+  description: String
+  price: Number
+  category: String
+  brand: String
+  quantity: Number
+  sold: Number
+  images: Array
+  color: Array
+  tags: Array
+  ratings: Array
+  totalrating: String
+}
+
+' Table : Utilisateur
+class User {
+  firstname: String
+  lastname: String
+  email: String
+  mobile: String
+  password: String
+  role: String
+  isBlocked: Boolean
+  cart: Array
+  address: String
+  wishlist: Array
+  refreshToken: String
+  passwordChangedAt: Date
+  passwordResetToken: String
+  passwordResetExpires: Date
+}
+
+' Relations entre les tables
+Blog "1" *-- "many" User : likes
+Blog "1" *-- "many" User : dislikes
+Cart "1" *-- "many" Product : products
+Cart "1" *-- "1" User : orderby
+Order "1" *-- "many" Product : products
+Order "1" *-- "1" User : orderby
+Product "1" *-- "many" User : ratings
+User "1" *-- "many" Product : wishlist
+@enduml
