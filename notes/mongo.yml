@@ -1,0 +1,16 @@
+# docker-compose up
+# docker-compose -f <chemin_vers_le_fichier> up
+# Accéder à MongoDB: mongo --host localhost --port 27017
+
+version: '3.8'
+services:
+  mongo:
+    image: mongo:latest  # Utilise l'image officielle de MongoDB
+    container_name: mongo_container  # Nom du conteneur
+    ports:
+      - "27017:27017"  # Mappe le port 27017 du container sur le port 27017 de la machine hôte
+    volumes:
+      - mongo_data:/data/db  # Monte un volume pour persister les données
+
+volumes:
+  mongo_data:  # Définit le volume persistant pour les données MongoDB
