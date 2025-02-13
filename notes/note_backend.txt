@@ -72,8 +72,6 @@ POST /api/login 401 35.642 ms - 12
 
 slugify est une bibliothèque Node.js qui permet de convertir une chaîne de caractères en un "slug". Un slug est une version formatée d'un texte, souvent utilisée dans les URLs pour rendre celles-ci plus lisibles, conviviales et optimisées pour les moteurs de recherche (SEO).
 
-
-
 -----------------------------------------------------------------------
 
 
@@ -225,7 +223,6 @@ http://localhost:5000/api/product/rating (put)
     "prodId": "67191fc218da15389eba64be",
     "comment": "Très bon produit"
 }
-
 
 -----------------------------------------------------------------------
 

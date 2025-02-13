@@ -281,9 +281,11 @@ const deleteImages = asyncHandler(async (req, res) => {
   }
 });
 
+
 const uploadImages = asyncHandler(async (req, res) => {
 
   try {
+
     const uploader = (path) => cloudinaryUploadImg(path, "images");
     const urls = [];
     const files = req.files;
@@ -301,7 +303,6 @@ const uploadImages = asyncHandler(async (req, res) => {
 
       // Supprimer l'image  redimensionnée une fois uploadée
       fs.unlinkSync(file.path);
-
     }
 
     const images = urls.map((file) => {
