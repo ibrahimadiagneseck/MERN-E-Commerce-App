@@ -2,10 +2,8 @@
 
 // `Outlet` est un espace réservé qui rendra les composants enfants dans le layout.
 import { Outlet } from "react-router-dom";
-
 // `Header` peut contenir des éléments de navigation, un logo, etc.
 import Header from "./Header";
-
 // `Footer` peut contenir des informations de contact, liens, copyright, etc.
 import Footer from "./Footer";
 

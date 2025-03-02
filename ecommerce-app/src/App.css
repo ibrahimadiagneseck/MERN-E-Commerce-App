@@ -37,7 +37,7 @@ a {
 }
 
 .header-bottom {
-  background-color: var(--color-212529);
+  background-color: var(--color-232f3e);
 }
 
 
@@ -57,7 +57,7 @@ a {
 } 
 
 .header-bottom .dropdown-menu {
-  background-color: var(--color-212529);
+  background-color: var(--color-232f3e);
   width: 100%;
   transform: translate3d(0px, 57px, 0px) !important; /* Déplace l'élément de 57px vers le bas sur l'axe Y avec accélération matérielle, priorité forcée. */
 
@@ -66,7 +66,7 @@ a {
 .header-bottom .dropdown-item {
   padding: 20px;
   margin-bottom: 3px;
-  border-bottom: 1px solid var(--color-212529);
+  border-bottom: 1px solid var(--color-232f3e);
 } 
 
 .header-bottom .dropdown-item:hover {
@@ -107,6 +107,7 @@ a {
 
 :root {
   --color-212529: #212529;
+  --color-232f3e: #232f3e;
   --color-ffd333: #ffd333;
   --color-47ad24: #47ad24;
   --color-e52e2e: #e52e2e;

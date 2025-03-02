@@ -733,8 +733,15 @@ form-data : images:files
 
 
 ----------------------------------------------------------------------------
+[
+    {
+        "url": "https://res.cloudinary.com/dhqbziob9/image/upload/v1740831192/swto6sovd4x2nik3uk3a.jpg",
+        "asset_id": "9e67c9140af7b960583cc788947dd1b2",
+        "public_id": "swto6sovd4x2nik3uk3a"
+    }
+]
 
-http://localhost:5000/api/product/delete-image/p9cvjtjtvk7rdy59j5ii (delete)
+http://localhost:5000/api/product/delete-image/swto6sovd4x2nik3uk3a (delete)
 
 http://localhost:5000/api/product/upload/ (put) 
 
