@@ -24,13 +24,14 @@ const router = express.Router();
 //   uploadImages, // Fonction pour gérer l'upload des images // Uploader les images vers Cloudinary
 // );
 
+// Modification de la route - ajout du paramètre :id
 router.put(
-  "/upload/",
+  "/upload/:id",  // ← Ajout du paramètre :id
   authMiddleware,
   isAdmin,
-  uploadPhoto.array("images", 2), // Limite à 2 images
-  productImgResize, // Middleware pour redimensionner les images // Redimensionner avant l'upload
-  uploadImages, // Fonction pour gérer l'upload des images // Uploader les images vers Cloudinary
+  uploadPhoto.array("images", 2),
+  productImgResize,
+  uploadImages
 );
 
 router.delete(

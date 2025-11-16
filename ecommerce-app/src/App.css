@@ -26,10 +26,36 @@ a {
   border-color: inherit; /* Utilise la couleur de bordure du parent */
 }
 
-/* ---------------------------------------------------------------- */
-/* Header Part */
-/* ---------------------------------------------------------------- */
+.gap-10 {
+  gap: 10px;
+}
 
+.gap-15 {
+  gap: 15px;
+}
+
+.gap-30 {
+  gap: 30px;
+}
+
+.button {
+  background-color: var(--color-232f3e);
+  color: white;
+  font-size: 14px;
+  padding: 13px 33px;
+  border-radius: 15px;
+}
+
+.button:hover {
+  background-color: var(--color-febb69);
+  color: white;
+  font-size: 14px;
+  padding: 13px 33px;
+  border-radius: 15px;
+}
+
+
+/* Header Part */
 .header-top-strip {
   border-bottom: 1px solid var(--color-828599);
   background-color: var(--color-212529);
@@ -63,7 +89,6 @@ a {
   background-color: var(--color-232f3e);
   width: 100%;
   transform: translate3d(0px, 57px, 0px) !important; /* Déplace l'élément de 57px vers le bas sur l'axe Y avec accélération matérielle, priorité forcée. */
-
 } 
 
 .header-bottom .dropdown-item {
@@ -86,54 +111,110 @@ a {
   height: 35px;
 }
 
-.gap-10 {
-  gap: 10px;
-}
 
-.gap-15 {
-  gap: 15px;
-}
 
-.gap-30 {
-  gap: 30px;
-}
-
-/* ---------------------------------------------------------------- */
 /* Header Part */
-/* ---------------------------------------------------------------- */
 
-
-
-/* ---------------------------------------------------------------- */
 /* Footer Part */
-/* ---------------------------------------------------------------- */
-
-
 footer {
   background-color: var(--color-232f3e);
 }
 
-/* footer:nth-child(2) {
-  border-top: 1px solid var(--color-3b4149);
-} */
-
 footer:not(:first-child) {
-  border-top: 1px solid rgba(255, 2555, 255, 0.1);
+  border-top: 1px solid var(--color-828599);
 }
 
 footer .input-group-text {
   background-color: var(--color-232f3e);
   color: white;
-  padding: 8px 17px;
+  padding: 8px 17px ;
+}
+/* Footer Part */
+
+/* Home Page */
+
+.main-banner-content {
+  top: 15%;
+  left: 5%;
+}
+
+.main-banner-content h4 {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-bf4800);
+  margin: 0 0 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.main-banner-content h5 {
+  font-size: 42px;
+  font-weight: 500;
+  line-height: 54px;
+  /* color: var(--co lor-bf4800); */
+  letter-spacing: -2px;
+  text-transform: none;
+}
+
+.main-banner-content p {
+  font-size: 18px;
+  /* font-weight: 500; */
+  line-height: 28px;
+  color: var(--color-131921);
+  letter-spacing: 0.4;
+  /* text-transform: none; */
 }
 
 
+.small-banner-content {
+  top: 25%;
+  left: 10%;
+}
+
+.small-banner-content h4 {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--color-bf4800);
+  margin: 0 0 12px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.small-banner-content h5 {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 34px;
+  /* color: var(--co lor-bf4800); */
+  letter-spacing: -2px;
+  text-transform: none;
+}
+
+.small-banner-content p {
+  font-size: 14px;
+  /* font-weight: 500; */
+  line-height: 22px;
+  color: var(--color-131921);
+  letter-spacing: 0.4;
+  /* text-transform: none; */
+}
+
+.small-banner {
+  width: 49%;
+}
+
+/* Hone wrapper 2 */
+
+.home-wrapper-2 {
+  background-color: var(--color-f5f5f7);
+}
+
+/* Hone wrapper 2 */
 
 
-/* ---------------------------------------------------------------- */
-/* Footer Part */
-/* ---------------------------------------------------------------- */
 
+/* Home Page */
 
 
 /* ---------------------------------------------------------------- */
@@ -148,9 +229,11 @@ footer .input-group-text {
   --color-47ad24: #47ad24;
   --color-e52e2e: #e52e2e;
   --color-828599: #828599;
-  --color-3d464d: #ed464d;
-  --color-c3d4da: #ced4da;
-  --color-3b4149: #3b4149;
+  --color-bf4800: #bf4800;
+  --color-ced4da: #ced4da;
+  --color-131921: #131921;
+  --color-febb69: #febb69;
+  --color-f5f5f7: #f5f5f7;
 }
 
 .green {
@@ -171,7 +254,7 @@ footer .input-group-text {
 
 .form-control {
   box-shadow: none;
-  border-color: var(--color-c3d4da);
+  border-color: var(--color-ced4da);
 }
 
 .title {
@@ -191,8 +274,3 @@ footer .input-group-text {
   font-family: Roboto !important;
   color: var(--color-828599);
 } 
-
-/* ---------------------------------------------------------------- */
-/* ---------------------------------------------------------------- */
-/* ---------------------------------------------------------------- */
-

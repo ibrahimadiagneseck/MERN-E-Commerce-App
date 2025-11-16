@@ -270,25 +270,26 @@ const rating = asyncHandler(async (req, res) => {
 
 
 const deleteImages = asyncHandler(async (req, res) => {
-
   const { id } = req.params;
 
   try {
-    // const deleted = cloudinaryDeleteImg(id, "images");
-    await cloudinaryDeleteImg(id, "images");
-    
-    res.json({ message: "Deleted" })
+    const result = await cloudinaryDeleteImg(id);
+    res.json({ 
+      message: "Image deleted successfully",
+      result: result 
+    });
   } catch (error) {
-    throw new Error(error);
+    console.error("Delete error:", error);
+    res.status(500).json({ 
+      message: "Error deleting image",
+      error: error.message 
+    });
   }
 });
 
-
 const uploadImages = asyncHandler(async (req, res) => {
-
   try {
-
-    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    const uploader = (path) => cloudinaryUploadImg(path);
     const urls = [];
     const files = req.files;
 
@@ -296,27 +297,89 @@ const uploadImages = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "Aucun fichier trouvé à uploader" });
     }
 
-    // Uploader les fichiers redimensionnés vers Cloudinary
+    // Uploader les fichiers vers Cloudinary
     for (const file of files) {
-
-      const newpath = await uploader(file.path);
-      console.log(newpath);
-      urls.push(newpath);
-
-      // Supprimer l'image  redimensionnée une fois uploadée
-      fs.unlinkSync(file.path);
+      try {
+        const newpath = await uploader(file.path);
+        console.log("Uploaded:", newpath);
+        urls.push(newpath);
+        
+        // Supprimer l'image temporaire après upload
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      } catch (fileError) {
+        console.error(`Error uploading file ${file.filename}:`, fileError);
+        // Continuer avec les autres fichiers même si une erreur se produit
+      }
     }
 
-    const images = urls.map((file) => {
-      return file;
+    if (urls.length === 0) {
+      return res.status(500).json({ message: "Aucun fichier n'a pu être uploadé" });
+    }
+
+    res.json({
+      message: "Images uploaded successfully",
+      images: urls
     });
 
-    res.json(images);
-
   } catch (error) {
-    throw new Error(error);
+    console.error("Upload error:", error);
+    res.status(500).json({ 
+      message: "Error uploading images",
+      error: error.message 
+    });
   }
 });
+
+// const deleteImages = asyncHandler(async (req, res) => {
+
+//   const { id } = req.params;
+
+//   try {
+//     // const deleted = cloudinaryDeleteImg(id, "images");
+//     await cloudinaryDeleteImg(id, "images");
+    
+//     res.json({ message: "Deleted" })
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+
+// const uploadImages = asyncHandler(async (req, res) => {
+
+//   try {
+
+//     const uploader = (path) => cloudinaryUploadImg(path, "images");
+//     const urls = [];
+//     const files = req.files;
+
+//     if (!files || files.length === 0) {
+//       return res.status(400).json({ message: "Aucun fichier trouvé à uploader" });
+//     }
+
+//     // Uploader les fichiers redimensionnés vers Cloudinary
+//     for (const file of files) {
+
+//       const newpath = await uploader(file.path);
+//       console.log(newpath);
+//       urls.push(newpath);
+
+//       // Supprimer l'image  redimensionnée une fois uploadée
+//       fs.unlinkSync(file.path);
+//     }
+
+//     const images = urls.map((file) => {
+//       return file;
+//     });
+
+//     res.json(images);
+
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
 
 
 // const uploadImages = asyncHandler(async (req, res) => {
