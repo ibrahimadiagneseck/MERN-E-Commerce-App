@@ -1,6 +1,8 @@
 // import { react } from "react";
 
+import Marquee from "react-fast-marquee";
 import { Link } from "react-router-dom";
+import BlogCard from "../components-test/BlogCard";
 
 const Home = () => {
     return (
@@ -105,6 +107,138 @@ const Home = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="home-wrapper-2 py-5">
+                    <div className="container-xxl">
+                        <div className="row">
+                            <div className="col-12">
+                                <div className="categories d-flex align-items-center justify-content-between flex-wrap">
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Cameras</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/camera.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Smart Tv</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/tv.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Smart Watches</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/watch.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Music & Gaming</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/headphone.jpg" alt="camera"/>
+                                    </div>
+                                    
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Music & Gaming</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/headphone.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Music & Gaming</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/headphone.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Music & Gaming</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/headphone.jpg" alt="camera"/>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap">
+                                        <div>
+                                            <h6>Music & Gaming</h6>
+                                            <p className="mb-0">10 Items</p>
+                                        </div>
+                                        <img src="images/headphone.jpg" alt="camera"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="marque-wrapper home-wrapper py-5">
+                    <div className="container-xxl">
+                        <div className="row">
+                            <div className="col-12">
+                                <div className="marquee-inner-wrapper card-wrapper">
+                                    <Marquee className="d-flex">
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-01.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-02.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-03.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-04.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-05.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-06.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-07.png" alt="brand"/>
+                                        </div>
+
+                                        <div className="mx-4 w-25">
+                                            <img src="images/brand-08.png" alt="brand"/>
+                                        </div>
+                                    </Marquee>
+                                </div>
+                            </div>
+                         </div>
+                     </div>
+                 </section>
+
+                <section className="blog-wrapper py-5">
+                    <div className="container-xxl">
+                        <div className="row">
+                            <div className="col-12s">
+                                <h3 className="section-heading">Our Lastest Blogs</h3>
+                            </div>
+                            <BlogCard/>
+                            <BlogCard/>
+                            <BlogCard/>
+                            <BlogCard/>
                         </div>
                     </div>
                 </section>
