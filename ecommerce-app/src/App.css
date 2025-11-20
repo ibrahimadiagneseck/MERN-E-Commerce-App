@@ -26,6 +26,10 @@ a {
   border-color: inherit; /* Utilise la couleur de bordure du parent */
 }
 
+.gap-5 {
+  gap: 5px;
+}
+
 .gap-10 {
   gap: 10px;
 }
@@ -378,6 +382,16 @@ footer .input-group-text {
 }
 
 /* Product Part */
+
+/* Special Product */
+.special-product-card {
+  padding: 20px 10px;
+  border-radius: 10px;
+  background-color: white;
+}
+
+
+/* Special Product */
 
 
 /* ---------------------------------------------------------------- */
