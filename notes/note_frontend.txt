@@ -60,7 +60,9 @@ C:\Users\ibrah\AppData\Roaming\Code\User\settings.json
 
 npm i react-fast-marquee
 
-npm install react-rating-stars-component 
+npm i react-rating-stars-component 
+
+npm i react-helmet
 
 // -------------------------------------------------------------------
 

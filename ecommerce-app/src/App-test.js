@@ -4,6 +4,7 @@ import Layout from "./components-test/Layout";
 import Home from "./pages-test/Home";
 import About from "./pages-test/About";
 import Contact from "./pages-test/Contact";
+import OurStore from "./pages-test/OurStore";
 
 // Déclaration du composant principal `App`.
 function AppTest() {
@@ -20,6 +21,7 @@ function AppTest() {
             <Route index element={<Home />} />
             <Route path="about" element={<About />} />
             <Route path="contact" element={<Contact />} />
+            <Route path="store" element={<OurStore />} />
           </Route>
 
         </Routes>
