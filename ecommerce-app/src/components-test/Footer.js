@@ -42,8 +42,8 @@ const Footer = () => {
                                 Dakar, Senegal <br/>
                                 PinCode: 10700
                             </address>
-                            <a href="tel:+221 77 521 17 87" className="mt-3 d-block mb-1 text-white">
-                                +221 77 521 17 87
+                            <a href="tel:+221 775211787" className="mt-3 d-block mb-1 text-white">
+                                +221 775211787
                             </a>
                             <a href="mailto:seckibrahimadiagne@gmail.com" className="mt-2 d-block mb-0 text-white">
                                 seckibrahimadiagne@gmail.com

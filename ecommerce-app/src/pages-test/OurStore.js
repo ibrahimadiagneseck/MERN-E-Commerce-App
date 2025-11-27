@@ -6,6 +6,7 @@ import Meta from "../components-test/Meta";
 import ReactStars from "react-rating-stars-component";
 import { useState } from "react";
 import ProductCard from "../components-test/ProductCard";
+import Color from "../components-test/Color";
 
 const OurStore = () => {
 
@@ -65,22 +66,7 @@ const OurStore = () => {
                                     </div>
                                     <h5 className="sub-title">Colors</h5>
                                     <div className="">
-                                        <ul className="colors ps-0">
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                            <li></li>
-                                        </ul>
+                                        <Color/>
                                     </div>
                                     <h5 className="sub-title">Sizes</h5>
                                     <div className="">
