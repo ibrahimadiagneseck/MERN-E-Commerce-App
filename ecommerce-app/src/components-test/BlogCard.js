@@ -1,6 +1,6 @@
 // import { react } from "react";
-import { NavLink, Link } from "react-router-dom";
-import { BsSearch } from "react-icons/bs";
+import { Link } from "react-router-dom";
+// import { BsSearch } from "react-icons/bs";
 
 const BlogCard = () => {
     return (
@@ -14,7 +14,7 @@ const BlogCard = () => {
                     <p className="desc">
                         Lxxxxxxxxxxx x xxxxxxxxxx x xxx x x xxxxxxxxxxx  xxxx xxxxx xxxxxxxxx
                     </p>
-                    <Link to="/" className="button">Read More</Link>
+                    <Link to="/blog/:id" className="button">Read More</Link>
                 </div>
             </div>
     )

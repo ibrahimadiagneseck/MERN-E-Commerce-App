@@ -9,8 +9,9 @@ const ProductCard = (props) => {
 
     return (
         <>
-        <div className={`${location.pathname === "/store" ? `gr-${grid}` : "col-3"}`} >
-            <Link className="product-card position-relative">
+        <div className={`${location.pathname === "/products" ? `gr-${grid}` : "col-3"}`} >
+            {/* <Link to=":id"  => si header contient deja un path */}
+            <Link to="/product/:id" className="product-card position-relative">
                 <div className="wishlist-icon position-absolute">
                     <Link><img src="images/wish.svg" alt="wishlist"/></Link>
                 </div>

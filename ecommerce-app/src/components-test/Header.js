@@ -90,7 +90,7 @@ const Header = () => {
                         <div className="col-12">
                             <div className="menu-bottom d-flex align-items-center gap-30">
                                 <div>
-                                    <div class="dropdown">
+                                    <div className="dropdown">
                                         <button className="btn btn-secondary dropdown-toggle bg-transparent border-0 gap-15 d-flex align-items-center" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                                             <img src="images/menu.svg" alt="" />
                                             <span className="me-5 d-inline-block">Shop Categories</span>
@@ -105,7 +105,7 @@ const Header = () => {
                                 <div className="menu-links">
                                     <div className="d-flex align-items-center gap-15">
                                         <NavLink to="/">Home</NavLink>
-                                        <NavLink to="/store">Our Store</NavLink>
+                                        <NavLink to="/products">Our Store</NavLink>
                                         <NavLink to="/blogs">Blogs</NavLink>
                                         <NavLink to="/contact">Contact</NavLink>
                                     </div>

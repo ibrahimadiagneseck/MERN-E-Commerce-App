@@ -315,6 +315,23 @@ footer .input-group-text {
   /* padding: 0; */
 }
 
+.single-blog-card a {
+    font-size: 18px;
+    color: var(--color-777777);
+    margin-bottom: 20px;
+}
+
+.single-blog-card h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-1c1c1b);
+}
+
+.single-blog-card p {
+    color: var(--color-777777);
+    font-size: 14px;
+}
+
 /* Blog Part */
 
 
@@ -632,6 +649,90 @@ footer .input-group-text {
 }
 
 /* Compare Product */
+
+/* auth card */
+
+.auth-card {
+    padding: 20px;
+    background-color: white;
+    width: 500px;
+    margin: 30px auto;
+    border-radius: 10px;
+}
+
+.auth-card h3 {
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--color-777777);
+}
+
+.auth-card p {
+    font-size: 13px;
+    color: var(--color-777777);
+}
+
+.auth-card .form-control {
+    height: 50px;
+    background-color: var(--color-f5f5f7);
+    color: var(--color-777777);
+    font-size: 14px;
+    border-radius: 10px;
+    border-color: transparent;
+}
+
+.auth-card a {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-1c1c1b);
+}
+
+.auth-card .signup {
+    background-color: var(--color-febd69);
+    color: var(--color-131921);
+}
+
+.auth-card .signup:hover {
+    background-color: var(--color-131921);
+    color: white;
+}
+/* auth card */
+
+
+/* policy pages */
+.policy {
+    background-color: white;
+    padding: 30px;
+}
+/* policy pages */
+
+/* Main Product Page */
+.review-inner-wrapper {
+    background-color: white;
+    padding: 30px;
+}
+.review-head {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 20px;
+}
+.review-head h4 {
+    font-size: 18px;
+    color: var(--color-1c1c1b);
+}
+.review-head p,
+.review-head a {
+    font-size: 14px;
+    color: var(--color-777777);
+}
+.review-form h4 {
+    font-size: 16px;
+    color: var(--color-777777);
+}
+
+.review p {
+    font-size: 14px;
+    color: var(--color-777777);
+}
+/* Main Product Page */
 
 
 /* ---------------------------------------------------------------- */

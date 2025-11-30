@@ -67,28 +67,28 @@ const Footer = () => {
                     <div className="col-3">
                         <h4 className="text-white mb-4">Information</h4>
                         <div className="footer-links d-flex flex-column">
-                            <Link className="text-white py-2 mb-1">Privacy Policy</Link>
-                            <Link className="text-white py-2 mb-1">Refund Policy</Link>
-                            <Link className="text-white py-2 mb-1">Shipping Policy</Link>
-                            <Link className="text-white py-2 mb-1">Terms & Conditions</Link>
-                            <Link className="text-white py-2 mb-1">Blogs</Link>
+                            <Link to="/privacy-policy" className="text-white py-2 mb-1">Privacy Policy</Link>
+                            <Link to="/refund-policy" className="text-white py-2 mb-1">Refund Policy</Link>
+                            <Link to="/shipping-policy" className="text-white py-2 mb-1">Shipping Policy</Link>
+                            <Link to="/terms-conditions" className="text-white py-2 mb-1">Terms & Conditions</Link>
+                            {/* <Link to="/blogs" className="text-white py-2 mb-1">Blogs</Link> */}
                         </div>
                     </div>
                     <div className="col-3">
                         <h4 className="text-white mb-4">Account</h4>
                         <div className="footer-links d-flex flex-column">
-                            <Link className="text-white py-2 mb-1">About Us</Link>
-                            <Link className="text-white py-2 mb-1">FAQ</Link>
-                            <Link className="text-white py-2 mb-1">Contact</Link>
+                            <Link to="/" className="text-white py-2 mb-1">About Us</Link>
+                            <Link to="/" className="text-white py-2 mb-1">FAQ</Link>
+                            <Link to="/" className="text-white py-2 mb-1">Contact</Link>
                         </div>
                     </div>
                     <div className="col-2">
                         <h4 className="text-white mb-4">Quick Links</h4>
                         <div className="footer-links d-flex flex-column">
-                            <Link className="text-white py-2 mb-1">Laptops</Link>
-                            <Link className="text-white py-2 mb-1">Headphone</Link>
-                            <Link className="text-white py-2 mb-1">Tablet</Link>
-                            <Link className="text-white py-2 mb-1">Watch</Link>
+                            <Link to="/" className="text-white py-2 mb-1">Laptops</Link>
+                            <Link to="/" className="text-white py-2 mb-1">Headphone</Link>
+                            <Link to="/" className="text-white py-2 mb-1">Tablet</Link>
+                            <Link to="/" className="text-white py-2 mb-1">Watch</Link>
                         </div>
                     </div>
                 </div>

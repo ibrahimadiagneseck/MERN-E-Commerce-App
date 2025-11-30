@@ -17,7 +17,7 @@ const Contact = () => {
 
                         <div className="col-12">
                             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d30874.35436875031!2d-17.48199877384218!3d14.695942115040953!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xec17292246d4da9%3A0x438c5fd7d91b27a2!2sPiscine%20Olympique%20Nationale%20de%20Dakar!5e0!3m2!1sfr!2ssn!4v1764277110119!5m2!1sfr!2ssn"
-                                width="600" height="450" className="border-0 w-100" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+                                width="600" height="450" className="border-0 w-100" allowFullScreen="" loading="lazy" referrerPolicy="no-referrer-when-downgrade" title="Google Maps location - Our office in Dakar"></iframe>
                         </div>
 
                         <div className="col-12 mt-5">
