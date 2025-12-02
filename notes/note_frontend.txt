@@ -64,6 +64,8 @@ npm i react-rating-stars-component
 
 npm i react-helmet
 
+npm install react-image-zoom --save
+
 // -------------------------------------------------------------------
 
 
