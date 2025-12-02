@@ -5,6 +5,30 @@ import { Link } from "react-router-dom";
 import BlogCard from "../components-test/BlogCard";
 import ProductCard from "../components-test/ProductCard";
 import SpecialProduct from "../components-test/SpecialProduct";
+import brand1 from "../images/brand-01.png";
+import brand2 from "../images/brand-02.png";
+import brand3 from "../images/brand-03.png";
+import brand4 from "../images/brand-04.png";
+import brand5 from "../images/brand-05.png";
+import brand6 from "../images/brand-06.png";
+import brand7 from "../images/brand-07.png";
+import brand8 from "../images/brand-08.png";
+import mainBanner1 from "../images/main-banner-1.jpg";
+import catbanner1 from "../images/catbanner-01.jpg";
+import catbanner2 from "../images/catbanner-02.jpg";
+import catbanner3 from "../images/catbanner-03.jpg";
+import catbanner4 from "../images/catbanner-04.jpg";
+import service from "../images/service.png";
+import service2 from "../images/service-02.png";
+import service3 from "../images/service-03.png";
+import service4 from "../images/service-04.png";
+import service5 from "../images/service-05.png";
+import camera from "../images/camera.jpg";
+import tv from "../images/tv.jpg";
+import watch from "../images/watch.jpg";
+import headphone from "../images/headphone.jpg";
+import image1 from "../images/image-1.jpg";
+import image2 from "../images/image-2.jpg";
 
 const Home = () => {
     return (
@@ -15,7 +39,7 @@ const Home = () => {
                         <div className="row">
                             <div className="col-6">
                                 <div className="main-banner position-relative">
-                                    <img src="images/main-banner-1.jpg" className="img-fluid rounded-3" alt="main-banner"/>
+                                    <img src={mainBanner1} className="img-fluid rounded-3" alt="main-banner"/>
                                     <div className="main-banner-content position-absolute">
                                         <h4>SUPERCHARGED FOR PROS.</h4>
                                         <h5>iPad S13+ Pro.</h5>
@@ -25,9 +49,9 @@ const Home = () => {
                                 </div> 
                             </div>
                             <div className="col-6">
-                                <div className="d-flex flex-wrap gap-10 justify-content-between align-items-center">
+                                <div className="d-flex flex-wrap gap-10 ju-ify-content-between align-items-center">
                                     <div className="small-banner position-relative">
-                                        <img src="images/catbanner-01.jpg" className="img-fluid rounded-3" alt="main-banner"/>
+                                        <img src={catbanner1} className="img-fluid rounded-3" alt="main-banner"/>
                                         <div className="small-banner-content position-absolute">
                                             <h4>BEST SALE</h4>
                                             <h5>iPad S13+ Pro.</h5>
@@ -36,7 +60,7 @@ const Home = () => {
                                     </div> 
 
                                     <div className="small-banner position-relative">
-                                        <img src="images/catbanner-02.jpg" className="img-fluid rounded-3" alt="main-banner"/>
+                                        <img src={catbanner2} className="img-fluid rounded-3" alt="main-banner"/>
                                         <div className="small-banner-content position-absolute">
                                             <h4>NEW ARRIVAL</h4>
                                             <h5>Buy IPad Air</h5>
@@ -45,7 +69,7 @@ const Home = () => {
                                     </div> 
 
                                     <div className="small-banner position-relative">
-                                        <img src="images/catbanner-03.jpg" className="img-fluid rounded-3" alt="main-banner"/>
+                                        <img src={catbanner3} className="img-fluid rounded-3" alt="main-banner"/>
                                         <div className="small-banner-content position-absolute">
                                             <h4>NEW ARRIVAL</h4>
                                             <h5>Buy IPad Air</h5>
@@ -54,7 +78,7 @@ const Home = () => {
                                     </div> 
                         
                                     <div className="small-banner position-relative">
-                                        <img src="images/catbanner-04.jpg" className="img-fluid rounded-3" alt="main-banner"/>
+                                        <img src={catbanner4} className="img-fluid rounded-3" alt="main-banner"/>
                                         <div className="small-banner-content position-absolute">
                                             <h4>NEW ARRIVAL</h4>
                                             <h5>Buy IPad Air</h5>
@@ -73,35 +97,35 @@ const Home = () => {
                             <div className="col-12">
                                 <div className="services d-flex align-items-center justify-content-between">
                                     <div className="d-flex align-items-center gap-15">
-                                        <img src="images/service.png" alt="services"/>
+                                        <img src={service} alt="services"/>
                                         <div>
                                             <h6>Free shipping</h6>
                                             <p className="mb-0">From all orders over $5</p>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center gap-15">
-                                        <img src="images/service-02.png" alt="services"/>
+                                        <img src={service2} alt="services"/>
                                         <div>
                                             <h6>Daily Surprise Offers</h6>
                                             <p className="mb-0">Save upto 25% off</p>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center gap-15">
-                                        <img src="images/service-03.png" alt="services"/>
+                                        <img src={service3} alt="services"/>
                                         <div>
                                             <h6>Support 24/7</h6>
                                             <p className="mb-0">Shop with an expert</p>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center gap-15">
-                                        <img src="images/service-04.png" alt="services"/>
+                                        <img src={service4} alt="services"/>
                                         <div>
                                             <h6>Affordable Prices</h6>
                                             <p className="mb-0">Get Factory Default price</p>
                                         </div>
                                     </div>
                                     <div className="d-flex align-items-center gap-15">
-                                        <img src="images/service-05.png" alt="services"/>
+                                        <img src={service5} alt="services"/>
                                         <div>
                                             <h6>Secure Payments</h6>
                                             <p className="mb-0">100% Protected Payment</p>
@@ -123,7 +147,7 @@ const Home = () => {
                                             <h6>Cameras</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/camera.jpg" alt="camera"/>
+                                        <img src={camera} alt="camera"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -131,7 +155,7 @@ const Home = () => {
                                             <h6>Smart Tv</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/tv.jpg" alt="camera"/>
+                                        <img src={tv} alt="tv"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -139,7 +163,7 @@ const Home = () => {
                                             <h6>Smart Watches</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/watch.jpg" alt="camera"/>
+                                        <img src={watch} alt="watch"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -147,7 +171,7 @@ const Home = () => {
                                             <h6>Music & Gaming</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/headphone.jpg" alt="camera"/>
+                                        <img src={headphone} alt="headphone"/>
                                     </div>
                                     
                                     <div className="d-flex align-items-center gap">
@@ -155,7 +179,7 @@ const Home = () => {
                                             <h6>Music & Gaming</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/headphone.jpg" alt="camera"/>
+                                        <img src={headphone} alt="headphone"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -163,7 +187,7 @@ const Home = () => {
                                             <h6>Music & Gaming</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/headphone.jpg" alt="camera"/>
+                                        <img src={headphone} alt="headphone"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -171,7 +195,7 @@ const Home = () => {
                                             <h6>Music & Gaming</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/headphone.jpg" alt="camera"/>
+                                        <img src={headphone} alt="headphone"/>
                                     </div>
 
                                     <div className="d-flex align-items-center gap">
@@ -179,7 +203,7 @@ const Home = () => {
                                             <h6>Music & Gaming</h6>
                                             <p className="mb-0">10 Items</p>
                                         </div>
-                                        <img src="images/headphone.jpg" alt="camera"/>
+                                        <img src={headphone} alt="headphone"/>
                                     </div>
                                 </div>
                             </div>
@@ -206,7 +230,7 @@ const Home = () => {
                         <div className="row">
                             <div className="col-3">
                                 <div className="famous-card position-relative">
-                                    <img src="images/image-1.jpg" className="img-fluid" alt="famous"/>
+                                    <img src={image1} className="img-fluid" alt="famous"/>
                                     <div className="famous-content position-absolute">
                                         <h5>Big Screen</h5>
                                         <h6>Smart Watch Series 7</h6>
@@ -217,7 +241,7 @@ const Home = () => {
 
                             <div className="col-3">
                                 <div className="famous-card position-relative">
-                                    <img src="images/image-2.jpg" className="img-fluid" alt="famous"/>
+                                    <img src={image2} className="img-fluid" alt="famous"/>
                                     <div className="famous-content position-absolute">
                                         <h5 className="text-dark">Studio Display</h5>
                                         <h6 className="text-dark">600 nits of brightness.</h6>
@@ -228,7 +252,7 @@ const Home = () => {
 
                             <div className="col-3">
                                 <div className="famous-card position-relative">
-                                    <img src="images/image-2.jpg" className="img-fluid" alt="famous"/>
+                                    <img src={image2} className="img-fluid" alt="famous"/>
                                     <div className="famous-content position-absolute">
                                         <h5 className="text-dark">Smartphones</h5>
                                         <h6 className="text-dark">Smartphones 13 pro.</h6>
@@ -239,7 +263,7 @@ const Home = () => {
 
                             <div className="col-3">
                                 <div className="famous-card position-relative">
-                                    <img src="images/image-2.jpg" className="img-fluid" alt="famous"/>
+                                    <img src={image2} className="img-fluid" alt="famous"/>
                                     <div className="famous-content position-absolute">
                                         <h5 className="text-dark">home Speakers</h5>
                                         <h6 className="text-dark">Room filling sound.</h6>
@@ -279,10 +303,17 @@ const Home = () => {
                                 <div className="card"></div>
                             </div>
                         </div> */}
+                        <div className="row">
+                            <div className="col-12">
+                                <h3 className="section-heading">Our Popular Products</h3>
+                            </div>
+                        </div>
+                        <div className="row">
                         <ProductCard/>
                         <ProductCard/>
                         <ProductCard/>
                         <ProductCard/>
+                        </div>
                     </div>
                 </section>
 
@@ -293,35 +324,35 @@ const Home = () => {
                                 <div className="marquee-inner-wrapper card-wrapper">
                                     <Marquee className="d-flex">
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-01.png" alt="brand"/>
+                                            <img src={brand1} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-02.png" alt="brand"/>
+                                            <img src={brand2} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-03.png" alt="brand"/>
+                                            <img src={brand3} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-04.png" alt="brand"/>
+                                            <img src={brand4} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-05.png" alt="brand"/>
+                                            <img src={brand5} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-06.png" alt="brand"/>
+                                            <img src={brand6} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-07.png" alt="brand"/>
+                                            <img src={brand7} alt="brand"/>
                                         </div>
 
                                         <div className="mx-4 w-25">
-                                            <img src="images/brand-08.png" alt="brand"/>
+                                            <img src={brand8} alt="brand"/>
                                         </div>
                                     </Marquee>
                                 </div>

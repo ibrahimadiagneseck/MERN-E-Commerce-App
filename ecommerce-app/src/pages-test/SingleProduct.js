@@ -1,20 +1,61 @@
-import Meta from "../components-test/Meta"
-import BreadCrumb from "../components-test/BreadCrumb"
+import Meta from "../components-test/Meta";
+import BreadCrumb from "../components-test/BreadCrumb";
 import ProductCard from "../components-test/ProductCard";
 import ReactStars from "react-rating-stars-component";
 import { useState } from "react";
-import ReactImageZoom from 'react-image-zoom';
+import ReactImageZoom from "react-image-zoom";
 import Color from "../components-test/Color";
 import { TbGitCompare } from "react-icons/tb";
 import { AiOutlineHeart } from "react-icons/ai";
 
 const SingleProduct = () => {
-    const props = { width: 400, height: 600, zoomWidth: 600, img: "https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80" };
-    const [orderedProduct, setOrderedProduct] = useState(true);
+    const props = {
+        width: 400,
+        height: 600,
+        zoomWidth: 600,
+        img: "https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+    };
+    const [orderedProduct] = useState(true); // Suppression de setOrderedProduct non utilisé
+
+    const copyToClipboard = (text) => {
+        console.log("text", text);
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Product link copied to clipboard!");
+        }).catch(err => {
+            console.error("Failed to copy: ", err);
+            // Fallback pour les anciens navigateurs
+            const textField = document.createElement("textarea");
+            textField.innerText = text;
+            document.body.appendChild(textField);
+            textField.select();
+            document.execCommand("copy");
+            textField.remove();
+            alert("Product link copied to clipboard!");
+        });
+    };
+
+    const handleAddToCompare = (e) => {
+        e.preventDefault();
+        console.log("Add to compare clicked");
+        // Ajouter ici la logique pour comparer le produit
+    };
+
+    const handleAddToWishlist = (e) => {
+        e.preventDefault();
+        console.log("Add to wishlist clicked");
+        // Ajouter ici la logique pour ajouter au wishlist
+    };
+
+    const handleWriteReview = (e) => {
+        e.preventDefault();
+        console.log("Write review clicked");
+        // Ajouter ici la logique pour écrire une review
+    };
+
     return (
         <>
-            <Meta title={"Poduct Name"} />
-            <BreadCrumb title="Poduct Name" />
+            <Meta title={"Product Name"} />
+            <BreadCrumb title="Product Name" />
             <div className="main-product-wrapper py-5 home-wrapper-2">
                 <div className="container-xxl">
                     <div className="row">
@@ -26,16 +67,32 @@ const SingleProduct = () => {
                             </div>
                             <div className="other-product-images d-flex flex-wrap gap-15">
                                 <div>
-                                    <img src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80" className="img-fluid" alt="watch" />
+                                    <img
+                                        src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+                                        className="img-fluid"
+                                        alt="watch"
+                                    />
                                 </div>
                                 <div>
-                                    <img src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80" className="img-fluid" alt="watch" />
+                                    <img
+                                        src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+                                        className="img-fluid"
+                                        alt="watch"
+                                    />
                                 </div>
                                 <div>
-                                    <img src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80" className="img-fluid" alt="watch" />
+                                    <img
+                                        src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+                                        className="img-fluid"
+                                        alt="watch"
+                                    />
                                 </div>
                                 <div>
-                                    <img src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80" className="img-fluid" alt="watch" />
+                                    <img
+                                        src="https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+                                        className="img-fluid"
+                                        alt="watch"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -58,9 +115,14 @@ const SingleProduct = () => {
                                         />
                                         <p className="mb-0 t-review">( 2 Reviews )</p>
                                     </div>
-                                    <a className="review-btn" href="#review">Write a Review</a>
+                                    <button 
+                                        className="review-btn border-0 bg-transparent text-decoration-underline p-0"
+                                        onClick={() => document.getElementById('review').scrollIntoView({ behavior: 'smooth' })}
+                                    >
+                                        Write a Review
+                                    </button>
                                 </div>
-                                <div className="border-bottom py-3">
+                                <div className="py-3">
                                     <div className="d-flex gap-10 align-items-center my-2">
                                         <h3 className="product-heading">Type :</h3>
                                         <p className="product-data">Match</p>
@@ -89,22 +151,21 @@ const SingleProduct = () => {
                                             <span className="badge border border-1 bg-white text-dark border-secondary">XL</span>
                                             <span className="badge border border-1 bg-white text-dark border-secondary">XXL</span>
                                         </div>
-                                    </div>:
+                                    </div>
                                     <div className="d-flex gap-10 flex-column mt-2 mb-3">
                                         <h3 className="product-heading">Color :</h3>
-                                        <Color/>
+                                        <Color />
                                     </div>
                                     <div className="d-flex align-items-center gap-15 flex-row mt-2 mb-3">
                                         <h3 className="product-heading">Quantity :</h3>
                                         <div className="">
                                             <input
                                                 type="number"
-                                                name=""
                                                 min={1}
                                                 max={10}
                                                 className="form-control"
                                                 style={{ width: "70px" }}
-                                                id=""
+                                                defaultValue={1}
                                             />
                                         </div>
                                         <div className="d-flex align-items-center gap-30 ms-5">
@@ -116,19 +177,39 @@ const SingleProduct = () => {
                                     </div>
                                     <div className="d-flex align-items-center gap-15">
                                         <div>
-                                            <a href="">
+                                            <button 
+                                                className="border-0 bg-transparent p-0 d-flex align-items-center"
+                                                onClick={handleAddToCompare}
+                                            >
                                                 <TbGitCompare className="fs-5 me-2" /> Add to Compare
-                                            </a>
+                                            </button>
                                         </div>
                                         <div>
-                                            <a href="">
+                                            <button 
+                                                className="border-0 bg-transparent p-0 d-flex align-items-center"
+                                                onClick={handleAddToWishlist}
+                                            >
                                                 <AiOutlineHeart className="fs-5 me-2" /> Add to Wishlist
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
-                                    <div className="d-flex gap-10 align-items-center my-2">
-                                        <h3 className="product-heading">Type :</h3>
-                                        <p className="product-data">Watch</p>
+                                    <div className="d-flex gap-10 flex-column my-3">
+                                        <h3 className="product-heading">Shipping & Returns :</h3>
+                                        <p className="product-data">
+                                            Free shipping and returns available on all orders! <br />
+                                            We ship all US domestic orders within <b>5-10 business days!</b>
+                                        </p>
+                                    </div>
+                                    <div className="d-flex gap-10 align-items-center my-3">
+                                        <h3 className="product-heading">Product Link:</h3>
+                                        <button 
+                                            className="border-0 bg-transparent text-decoration-underline p-0"
+                                            onClick={() => {
+                                                copyToClipboard("https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80");
+                                            }}
+                                        >
+                                            Copy Product Link
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -141,9 +222,7 @@ const SingleProduct = () => {
                     <div className="row">
                         <div className="col-12">
                             <h4>Description</h4>
-                            {/* <div className="review-inner-wrapper"> */}
                             <div className="bg-white p-3">
-
                                 <p>
                                     Lorem ipsum dolor, sit amet consectetur adipisicing elit.
                                     Tenetur nisi similique illum aut perferendis voluptas, quisquam
@@ -151,7 +230,6 @@ const SingleProduct = () => {
                                     labore maxime officia esse eos? Repellat?
                                 </p>
                             </div>
-                            {/* </div> */}
                         </div>
                     </div>
                 </div>
@@ -178,28 +256,29 @@ const SingleProduct = () => {
                                     </div>
                                     {orderedProduct && (
                                         <div>
-                                            <a className="text-dark text-decoration-underline" href="">
+                                            <button 
+                                                className="text-dark text-decoration-underline border-0 bg-transparent p-0"
+                                                onClick={handleWriteReview}
+                                            >
                                                 Write a Review
-                                            </a>
+                                            </button>
                                         </div>
                                     )}
                                 </div>
                                 <div className="review-form py-4">
                                     <h4>Write a Reviews</h4>
-                                    <form action="" className="d-flex flex-column gap-15">
+                                    <form className="d-flex flex-column gap-15">
                                         <div>
                                             <ReactStars
                                                 count={5}
                                                 size={24}
-                                                value={4}
+                                                value={0}
                                                 edit={true}
                                                 activeColor="#ffd700"
                                             />
                                         </div>
                                         <div>
                                             <textarea
-                                                name=""
-                                                id=""
                                                 className="w-100 form-control"
                                                 cols="30"
                                                 rows="4"
@@ -213,7 +292,7 @@ const SingleProduct = () => {
                                 </div>
                                 <div className="reviews mt-3">
                                     <div className="review">
-                                        <div className="d-flex gap-10 align-items-centre">
+                                        <div className="d-flex gap-10 align-items-center">
                                             <h6 className="mb-0">Navdeep</h6>
                                             <ReactStars
                                                 count={5}

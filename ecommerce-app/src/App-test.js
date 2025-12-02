@@ -18,6 +18,7 @@ import RefundPolicy from "./pages-test/RefundPolicy";
 import ShippingPolicy from "./pages-test/ShippingPolicy";
 import TermsAndCondition from "./pages-test/TermsAndConditions";
 import SingleProduct from "./pages-test/SingleProduct";
+import Cart from "./pages-test/Cart";
 
 // Déclaration du composant principal `App`.
 function AppTest() {
@@ -38,6 +39,7 @@ function AppTest() {
             <Route path="product/:id" element={<SingleProduct />} />
             <Route path="blogs" element={<Blog />} />
             <Route path="blog/:id" element={<SingleBlog />} />
+            <Route path="cart" element={<Cart />} />
             <Route path="compare-product" element={<CompareProduct />} />
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="login" element={<Login />} />

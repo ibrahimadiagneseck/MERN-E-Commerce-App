@@ -7,6 +7,11 @@ import ReactStars from "react-rating-stars-component";
 import { useState } from "react";
 import ProductCard from "../components-test/ProductCard";
 import Color from "../components-test/Color";
+import watch from "../images/watch.jpg";
+import gr4 from "../images/gr4.svg";
+import gr3 from "../images/gr3.svg";
+import gr2 from "../images/gr2.svg";
+import gr from "../images/gr.svg";
 
 const OurStore = () => {
 
@@ -113,7 +118,7 @@ const OurStore = () => {
                                 <div>
                                     <div className="random-products mb-3 d-flex">
                                         <div className="w-50">
-                                            <img src="images/watch.jpg" className="img-fluid" alt="watch" />
+                                            <img src={watch} className="img-fluid" alt="watch" />
                                         </div>
                                         <div className="w-50">
                                             <h5 className="product-title">
@@ -131,7 +136,7 @@ const OurStore = () => {
                                     </div>
                                     <div className="random-products d-flex">
                                         <div className="w-50">
-                                            <img src="images/watch.jpg" className="img-fluid" alt="watch" />
+                                            <img src={watch} className="img-fluid" alt="watch" />
                                         </div>
                                         <div className="w-50">
                                             <h5 className="product-title">
@@ -177,22 +182,22 @@ const OurStore = () => {
                                                 () => {
                                                     setGrid(3);
                                                 }
-                                            } src="images/gr4.svg" class="d-block img-fluid" alt="grid" />
+                                            } src={gr4} class="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(4);
                                                 }
-                                            } src="images/gr3.svg" class="d-block img-fluid" alt="grid" />
+                                            } src={gr3} class="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(6);
                                                 }
-                                            } src="images/gr2.svg" class="d-block img-fluid" alt="grid" />
+                                            } src={gr2} class="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(12);
                                                 }
-                                            } src="images/gr.svg" class="d-block img-fluid" alt="grid" />
+                                            } src={gr} class="d-block img-fluid" alt="grid" />
                                         </div>
                                     </div> 
                                 </div>

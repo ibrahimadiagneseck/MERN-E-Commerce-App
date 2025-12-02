@@ -2,6 +2,7 @@
 
 import { BsGithub, BsInstagram, BsLinkedin, BsYoutube } from "react-icons/bs";
 import { Link } from "react-router-dom";
+import newsletter from "../images/newsletter.png";
 
 const Footer = () => {
     return (
@@ -11,7 +12,7 @@ const Footer = () => {
                 <div className="row justify-content-center">
                     <div className="col-5">
                         <div className="footer-top-data d-flex gap-30 align-items-center justify-content-center">
-                            <img src="images/newsletter.png" alt="newsletter" />
+                            <img src={newsletter} alt="newsletter" />
                             <h2 className="mb-0 text-white">Sign Up for Newsletter</h2>
                         </div>
                     </div>
@@ -49,16 +50,16 @@ const Footer = () => {
                                 seckibrahimadiagne@gmail.com
                             </a>
                             <div className="social_icons d-flex align-items-center gap-30 mt-4">
-                                <a className="text-white" href="#">
+                                <a className="text-white" href="https://google.com">
                                     <BsLinkedin className="fs-4"/>
                                 </a>
-                                <a className="text-white" href="#">
+                                <a className="text-white" href="https://google.com">
                                     <BsInstagram className="fs-4"/>
                                 </a>
-                                <a className="text-white" href="#">
+                                <a className="text-white" href="https://google.com">
                                     <BsGithub className="fs-4"/>
                                 </a>
-                                <a className="text-white" href="#">
+                                <a className="text-white" href="https://google.com">
                                     <BsYoutube className="fs-4"/>
                                 </a>
                             </div>
