@@ -1,5 +1,6 @@
 import Meta from "../components-test/Meta"
 import BreadCrumb from "../components-test/BreadCrumb"
+import Container from "../components-test/Container";
 // import { Link } from "react-router-dom";
 
 const Signup = () => {
@@ -9,8 +10,7 @@ const Signup = () => {
             <Meta title={"Sign Up"} /> 
             <BreadCrumb title="Sign Up" />
 
-            <div className="login-wrapper py-5 home-wrapper-2">
-                <div className="container-xxl">
+            <Container class1="login-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <div className="col-12">
                         <div className="auth-card">
@@ -37,8 +37,7 @@ const Signup = () => {
                         </div>
                     </div>
                 </div>
-                </div>
-            </div>
+            </Container>
         </>
     );
 };

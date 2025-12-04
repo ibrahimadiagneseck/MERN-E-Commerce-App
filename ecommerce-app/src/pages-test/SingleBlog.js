@@ -3,14 +3,14 @@ import BreadCrumb from "../components-test/BreadCrumb"
 import { Link } from "react-router-dom";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import blog3 from "../images/blog-3.webp";
+import Container from "../components-test/Container";
 
 const SingleBlog = () => {
     return (
         <>
             <Meta title={"Dynamic Blog Name"} />
             <BreadCrumb title="Dynamic Blog Name" />
-            <div className="blog-wrapper home-wrapper-2 py-5">
-                <div className="container-xxl">
+            <Container class1="blog-wrapper home-wrapper-2 py-5">
                     <div className="row">
                         <div className="col-12">
                             <div className="single-blog-card">
@@ -31,8 +31,7 @@ const SingleBlog = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+            </Container>
         </>
     );
 };

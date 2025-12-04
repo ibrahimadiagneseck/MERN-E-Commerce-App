@@ -5,14 +5,14 @@ import BreadCrumb from "../components-test/BreadCrumb";
 import Meta from "../components-test/Meta";
 import { AiOutlineHome, AiOutlineMail } from "react-icons/ai";
 import { BiPhoneCall } from "react-icons/bi";
+import Container from "../components-test/Container";
 
 const Contact = () => {
     return (
         <>
             <Meta title="Contact Us" />
             <BreadCrumb title="Contact Us" />
-            <div className="contact-wrapper py-5 home-wrapper-2">
-                <div className="container-xxl">
+            <Container class1="contact-wrapper py-5 home-wrapper-2">
                     <div className="row">
 
                         <div className="col-12">
@@ -94,8 +94,7 @@ const Contact = () => {
                         </div>
 
                     </div>
-                </div>
-            </div>
+            </Container>
         </>
     );
 };

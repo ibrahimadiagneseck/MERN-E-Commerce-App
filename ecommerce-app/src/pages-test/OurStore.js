@@ -12,6 +12,7 @@ import gr4 from "../images/gr4.svg";
 import gr3 from "../images/gr3.svg";
 import gr2 from "../images/gr2.svg";
 import gr from "../images/gr.svg";
+import Container from "../components-test/Container";
 
 const OurStore = () => {
 
@@ -21,8 +22,7 @@ const OurStore = () => {
         <>
             <Meta title={"Our Store"} />
             <BreadCrumb title="Our Store" />
-            <div className="store-wrapper home-wrapper-2 py-5">
-                <div className="container-xxl">
+            <Container class1="store-wrapper home-wrapper-2 py-5">
                     <div className="row">
                         <div className="col-3">
                             <div className="filter-card mb-3">
@@ -209,8 +209,7 @@ const OurStore = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
+            </Container>
         </>
     )
 }

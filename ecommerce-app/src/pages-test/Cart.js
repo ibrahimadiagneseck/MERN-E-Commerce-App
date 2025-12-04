@@ -5,14 +5,14 @@ import BreadCrumb from "../components-test/BreadCrumb";
 import Meta from "../components-test/Meta";
 import watch from "../images/watch.jpg";
 import { Link } from "react-router-dom";
+import Container from "../components-test/Container";
 
 const Cart = () => {
     return (
         <>
             <Meta title={"Cart"} />
             <BreadCrumb title="Cart" />
-            <section className="cart-wrapper home-wrapper-2 py-5">
-                <div className="container-xxl">
+            <Container class1="cart-wrapper home-wrapper-2 py-5">
                     <div className="row">
                         <div className="col-12">
                             <div className="cart-header py-3 d-flex justify-content-between align-items-center">
@@ -60,7 +60,7 @@ const Cart = () => {
                                 </div>
                             </div>
 
-                            <div className="cart-data py-3 mb-2 d-flex justify-content-between align-items-center">
+                            {/* <div className="cart-data py-3 mb-2 d-flex justify-content-between align-items-center">
                                 <div className="cart-col-1 gap-15 d-flex align-items-center">
                                     <div className="w-25">
                                         <img
@@ -96,7 +96,7 @@ const Cart = () => {
                                 <div className="cart-col-4">
                                     <h5 className="price">$ 100</h5>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                         <div className="col-12 py-2 mt-4">
                             <div className="d-flex justify-content-between align-items-baseline">
@@ -113,8 +113,7 @@ const Cart = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+            </Container>
         </>
     )
 
