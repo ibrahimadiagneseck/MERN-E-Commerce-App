@@ -1,18 +1,18 @@
 // import { react } from "react";
 
 // import { Helmet } from "react-helmet";
-import BreadCrumb from "../components-test/BreadCrumb";
-import Meta from "../components-test/Meta";
+import BreadCrumb from "../components/BreadCrumb";
+import Meta from "../components/Meta";
 import ReactStars from "react-rating-stars-component";
 import { useState } from "react";
-import ProductCard from "../components-test/ProductCard";
-import Color from "../components-test/Color";
+import ProductCard from "../components/ProductCard";
+import Color from "../components/Color";
 import watch from "../images/watch.jpg";
 import gr4 from "../images/gr4.svg";
 import gr3 from "../images/gr3.svg";
 import gr2 from "../images/gr2.svg";
 import gr from "../images/gr.svg";
-import Container from "../components-test/Container";
+import Container from "../components-others/Container";
 
 const OurStore = () => {
 

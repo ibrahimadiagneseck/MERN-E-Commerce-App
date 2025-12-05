@@ -1,9 +1,10 @@
-import Meta from "../components-test/Meta"
-import BreadCrumb from "../components-test/BreadCrumb"
+import Meta from "../components/Meta"
+import BreadCrumb from "../components/BreadCrumb"
 import { Link } from "react-router-dom";
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import blog3 from "../images/blog-3.webp";
-import Container from "../components-test/Container";
+import Container from "../components-others/Container";
+
 
 const SingleBlog = () => {
     return (

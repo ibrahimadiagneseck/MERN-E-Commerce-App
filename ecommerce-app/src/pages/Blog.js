@@ -1,8 +1,8 @@
 import React from "react";
-import BreadCrumb from "../components-test/BreadCrumb";
-import Meta from "../components-test/Meta";
-import BlogCard from "../components-test/BlogCard";
-import Container from "../components-test/Container";
+import BreadCrumb from "../components/BreadCrumb";
+import Meta from "../components/Meta";
+import BlogCard from "../components/BlogCard";
+import Container from "../components-others/Container";
 
 
 

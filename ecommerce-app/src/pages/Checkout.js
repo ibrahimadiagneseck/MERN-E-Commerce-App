@@ -1,10 +1,10 @@
 // import { react } from "react";
 import { BiArrowBack } from "react-icons/bi";
 import { Link } from "react-router-dom";
-// import BreadCrumb from "../components-test/BreadCrumb";
-// import Meta from "../components-test/Meta";
+// import BreadCrumb from "../components/BreadCrumb";
+// import Meta from "../components/Meta";
 import watch from "../images/watch.jpg";
-import Container from "../components-test/Container";
+import Container from "../components-others/Container";
 
 const Checkout = () => {
 

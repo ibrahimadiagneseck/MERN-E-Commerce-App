@@ -1,9 +1,9 @@
 // import { react } from "react";
 
-import BreadCrumb from "../components-test/BreadCrumb";
-import Color from "../components-test/Color";
-import Container from "../components-test/Container";
-import Meta from "../components-test/Meta";
+import BreadCrumb from "../components/BreadCrumb";
+import Color from "../components/Color";
+import Container from "../components-others/Container";
+import Meta from "../components/Meta";
 
 import cross from "../images/cross.svg";
 import watch from "../images/watch.jpg";

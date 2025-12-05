@@ -1,13 +1,13 @@
-import Meta from "../components-test/Meta"
-import BreadCrumb from "../components-test/BreadCrumb"
-import Container from "../components-test/Container";
+import Meta from "../components/Meta"
+import BreadCrumb from "../components/BreadCrumb"
+import Container from "../components-others/Container";
 // import { Link } from "react-router-dom";
 
-const PrivacyPolicy = () => {
+const TermsAndCondition = () => {
     return (
         <>
-            <Meta title={"Privacy Policy"} /> 
-            <BreadCrumb title="Privacy Policy" />
+            <Meta title={"Terms And Conditions"} /> 
+            <BreadCrumb title="Terms And Conditions" />
             <Container class1="policy-wrapper py-5 home-wrapper-2">
                     <div className="row">
                         <div className="col-12">
@@ -19,4 +19,4 @@ const PrivacyPolicy = () => {
     )
 }
 
-export default PrivacyPolicy;
+export default TermsAndCondition;

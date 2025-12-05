@@ -1,6 +1,7 @@
-import Meta from "../components-test/Meta"
-import BreadCrumb from "../components-test/BreadCrumb"
-import Container from "../components-test/Container";
+import Meta from "../components/Meta"
+import BreadCrumb from "../components/BreadCrumb"
+import Container from "../components-others/Container";
+import CustomInput from "../components-others/CustomInput";
 // import { Link } from "react-router-dom";
 
 const Resetpassword = () => {
@@ -18,14 +19,22 @@ const Resetpassword = () => {
                                 We will send you an email to reset your password
                             </p>
                             <form action="" className="d-flex flex-column gap-15">
-                                <div>
-                                    <input type="password" name="password" placeholder="Password" className="form-control" />
-                                </div>
-                                <div className="mt-1">
-                                    <input type="password" name="confirmpassword" placeholder="Confirm Password" className="form-control" />
-                                </div>
-                                <div>
+                                <CustomInput
+                                    type="password"
+                                    label="Password"
+                                    i_id="password"
+                                    i_class=""
+                                    name="password"
+                                />
 
+                                <CustomInput
+                                    type="password"
+                                    label="Confirm Password"
+                                    i_id="confirmpassword"
+                                    i_class=""
+                                    name="confirmpassword"
+                                />
+                                <div>
                                     <div className="mt-3 d-flex justify-content-center gap-15 align-items-center">
                                         <button type="submit" className="button border-0">Ok</button>
                                     </div>

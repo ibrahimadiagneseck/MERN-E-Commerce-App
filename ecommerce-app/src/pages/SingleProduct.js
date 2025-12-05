@@ -1,13 +1,14 @@
-import Meta from "../components-test/Meta";
-import BreadCrumb from "../components-test/BreadCrumb";
-import ProductCard from "../components-test/ProductCard";
+import Meta from "../components/Meta";
+import BreadCrumb from "../components/BreadCrumb";
+import ProductCard from "../components/ProductCard";
 import ReactStars from "react-rating-stars-component";
 import { useState } from "react";
 import ReactImageZoom from "react-image-zoom";
-import Color from "../components-test/Color";
+import Color from "../components/Color";
 import { TbGitCompare } from "react-icons/tb";
 import { AiOutlineHeart } from "react-icons/ai";
-import Container from "../components-test/Container";
+import Container from "../components-others/Container";
+import CustomInput from "../components-others/CustomInput";
 
 const SingleProduct = () => {
     const props = {
@@ -158,16 +159,17 @@ const SingleProduct = () => {
                                     </div>
                                     <div className="d-flex align-items-center gap-15 flex-row mt-2 mb-3">
                                         <h3 className="product-heading">Quantity :</h3>
-                                        <div className="">
-                                            <input
-                                                type="number"
-                                                min={1}
-                                                max={10}
-                                                className="form-control"
-                                                style={{ width: "70px" }}
-                                                defaultValue={1}
-                                            />
-                                        </div>
+                                        <CustomInput
+                                            type="number"
+                                            label="Quantity"
+                                            i_id="quantity"
+                                            i_class=""
+                                            name="quantity"
+                                            min={1}
+                                            max={10}
+                                            val={1} // valeur par défaut
+                                            style={{ width: "70px" }}
+                                        />
                                         <div className="d-flex align-items-center gap-30 ms-5">
                                             <button className="button border-0" type="submit">
                                                 Add to Cart
