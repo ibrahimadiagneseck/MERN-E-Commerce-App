@@ -72,6 +72,42 @@ npm install react-image-zoom --save
 
 // -------------------------------------------------------------------
 
+Netlify est une plateforme cloud qui permet de déployer, héberger et gérer des sites web statiques et des applications web modernes.
+Voici les points clés à connaître :
+
+1️⃣ Déploiement facile
+
+    Tu peux déployer directement ton site depuis GitHub, GitLab ou Bitbucket.
+    
+    Netlify détecte automatiquement les changements dans ton dépôt et met à jour ton site.
+
+2️⃣ Sites statiques et Jamstack
+
+    Netlify est particulièrement conçu pour les sites statiques, les frontends React, Vue, Angular, ou les sites générés par des static site generators comme Gatsby ou Hugo.
+
+    Fonctionne très bien avec l’architecture Jamstack (JavaScript, APIs, Markup).
+
+3️⃣ Fonctionnalités supplémentaires
+
+    HTTPS gratuit avec certificat SSL automatique.
+
+    Fonctions serverless (Netlify Functions) pour exécuter du code côté serveur.
+
+    Formulaires intégrés, redirections et gestion des URL.
+
+    CDN mondial pour un chargement rapide.
+
+4️⃣ Gestion via l’interface
+
+    L’adresse que tu as partagée (https://app.netlify.com/) est l’interface web de Netlify où tu peux :
+
+    Connecter tes dépôts Git.
+
+    Configurer les builds et les déploiements.
+
+    Gérer tes sites, domaines et certificats SSL.
+
+    Voir les logs et les statistiques de ton site.
 
 // -------------------------------------------------------------------
 
