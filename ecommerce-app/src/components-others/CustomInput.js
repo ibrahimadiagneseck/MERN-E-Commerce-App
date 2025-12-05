@@ -16,7 +16,7 @@ const CustomInput = (props) => {
   return (
     <div className="form-floating mt-3">
       {/* Champ de saisie */}
-      <input
+      <input 
         type={type}                       // Type du champ
         className={`form-control ${i_class}`} // Ajout de classes CSS
         id={i_id}                         // Identifiant HTML

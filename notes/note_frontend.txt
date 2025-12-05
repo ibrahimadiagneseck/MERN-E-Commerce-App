@@ -111,3 +111,13 @@ Voici les points clés à connaître :
 
 // -------------------------------------------------------------------
 
+pour eviter les problemes de deploiement continu, ajouter
+
+netlify.toml
+
+[[redirects]]
+from = "/*"
+to = "/"
+status = 200
+
+// -------------------------------------------------------------------

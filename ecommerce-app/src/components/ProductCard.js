@@ -26,7 +26,9 @@ const ProductCard = (props) => {
     return (
         <>
             <div className={`${location.pathname === "/products" ? `gr-${grid}` : "col-3"}`}>
-                <Link to="/product/:id" className="product-card position-relative">
+                {/* <Link to=":id" className="product-card position-relative"> */}
+                <Link to="/product/1" className="product-card position-relative">
+                {/* <Link to={`${location.pathname === "/" ? "product/:id" : "/product/:id"}`} className="product-card position-relative"> */}
                     <div className="wishlist-icon position-absolute">
                         <button className="border-0 bg-transparent">
                             <img src={wishIcon} alt="wishlist" />
@@ -73,8 +75,11 @@ const ProductCard = (props) => {
                 </Link>
             </div>
             
-            <div className={`${location.pathname === "/store" ? `gr-${grid}` : "col-3"}`}>
-                <Link to="/product/:id" className="product-card position-relative">
+            <div className={`${location.pathname === "/products" ? `gr-${grid}` : "col-3"}`}>
+                <Link to="/product/2" className="product-card position-relative">
+                {/* <Link to={`/product/${product.id}`} className="product-card position-relative"> */}
+                {/* <Link to={`${location.pathname === "/" ? "product/:id" : "/product/:id"}`} className="product-card position-relative"> */}
+
                     <div className="wishlist-icon position-absolute">
                         <button className="border-0 bg-transparent">
                             <img src={wishIcon} alt="wishlist" />

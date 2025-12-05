@@ -25,7 +25,7 @@ const Login = () => {
                                     name="email"
                                 />
 
-                                <CustomInput
+                                <CustomInput  
                                     type="password"
                                     label="Password"
                                     i_id="password"
