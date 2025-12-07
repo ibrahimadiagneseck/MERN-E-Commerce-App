@@ -1,4 +1,4 @@
-import { React, useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import CustomInput from "../components/CustomInput";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
@@ -22,6 +22,7 @@ let schema = yup.object().shape({
   description: yup.string().required("Description is Required"),
   category: yup.string().required("Category is Required"),
 });
+
 const Addblog = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -41,44 +42,54 @@ const Addblog = () => {
     blogImages,
     updatedBlog,
   } = blogState;
+
+  // Use useMemo to create img array
+  const img = useMemo(() => {
+    const result = imgState.map((i) => ({
+      public_id: i.public_id,
+      url: i.url,
+    }));
+    
+    // Add blogImages if it exists
+    if (blogImages) {
+      result.push(blogImages);
+    }
+    
+    return result;
+  }, [imgState, blogImages]);
+
   useEffect(() => {
     if (getBlogId !== undefined) {
       dispatch(getABlog(getBlogId));
-      img.push(blogImages);
     } else {
       dispatch(resetState());
     }
-  }, [getBlogId]);
+  }, [dispatch, getBlogId]);
 
   useEffect(() => {
     dispatch(resetState());
     dispatch(getCategories());
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (isSuccess && createdBlog) {
-      toast.success("Blog Added Successfullly!");
+      toast.success("Blog Added Successfully!");
     }
     if (isSuccess && updatedBlog) {
-      toast.success("Blog Updated Successfullly!");
+      toast.success("Blog Updated Successfully!");
       navigate("/admin/blog-list");
     }
     if (isError) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading]);
-
-  const img = [];
-  imgState.forEach((i) => {
-    img.push({
-      public_id: i.public_id,
-      url: i.url,
-    });
-  });
-  console.log(img);
-  useEffect(() => {
-    formik.values.images = img;
-  }, [blogImages]);
+  }, [
+    isSuccess,
+    isError,
+    isLoading,
+    createdBlog,
+    updatedBlog,
+    navigate
+  ]);
 
   const formik = useFormik({
     enableReinitialize: true,
@@ -86,7 +97,7 @@ const Addblog = () => {
       title: blogName || "",
       description: blogDesc || "",
       category: blogCategory || "",
-      images: "",
+      images: img, // Set initial value to img
     },
     validationSchema: schema,
     onSubmit: (values) => {
@@ -103,6 +114,13 @@ const Addblog = () => {
       }
     },
   });
+
+  // Update formik values when img changes
+  useEffect(() => {
+    if (JSON.stringify(formik.values.images) !== JSON.stringify(img)) {
+      formik.setFieldValue("images", img);
+    }
+  }, [img]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -149,7 +167,7 @@ const Addblog = () => {
             theme="snow"
             className="mt-3"
             name="description"
-            onChange={formik.handleChange("description")}
+            onChange={(value) => formik.setFieldValue("description", value)}
             value={formik.values.description}
           />
           <div className="error">

@@ -1,5 +1,5 @@
-import React from "react";
-import { BsArrowDownRight, BsArrowUpRight } from "react-icons/bs";
+// import React from "react";
+import { BsArrowDownRight } from "react-icons/bs";
 import { Column } from "@ant-design/plots";
 import { Table } from "antd";
 const columns = [
@@ -88,7 +88,7 @@ const Dashboard = () => {
       return "#ffd333";
     },
     label: {
-      position: "middle",
+      position: "top",
       style: {
         fill: "#FFFFFF",
         opacity: 1,

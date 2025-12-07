@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Table } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { getUsers } from "../features/cutomers/customerSlice";
+
 const columns = [
   {
     title: "SNo",
@@ -26,7 +27,7 @@ const Customers = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getUsers());
-  }, []);
+  }, [dispatch]);
   const customerstate = useSelector((state) => state.customer.customers);
   const data1 = [];
   for (let i = 0; i < customerstate.length; i++) {

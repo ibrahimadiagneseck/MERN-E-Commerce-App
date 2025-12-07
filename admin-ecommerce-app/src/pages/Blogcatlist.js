@@ -43,7 +43,7 @@ const Blogcatlist = () => {
   useEffect(() => {
     dispatch(resetState());
     dispatch(getCategories());
-  }, []);
+  }, [dispatch]);
   const bCatState = useSelector((state) => state.bCategory.bCategories);
   console.log(bCatState);
   const data1 = [];

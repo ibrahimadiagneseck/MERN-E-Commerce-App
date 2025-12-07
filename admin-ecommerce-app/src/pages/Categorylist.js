@@ -43,7 +43,7 @@ const Categorylist = () => {
   useEffect(() => {
     dispatch(resetState());
     dispatch(getCategories());
-  }, []);
+  }, [dispatch]);
   const pCatStat = useSelector((state) => state.pCategory.pCategories);
   const data1 = [];
   for (let i = 0; i < pCatStat.length; i++) {

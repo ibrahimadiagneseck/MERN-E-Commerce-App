@@ -29,27 +29,28 @@ const Addbrand = () => {
     brandName,
     updatedBrand,
   } = newBrand;
+  
   useEffect(() => {
     if (getBrandId !== undefined) {
       dispatch(getABrand(getBrandId));
     } else {
       dispatch(resetState());
     }
-  }, [getBrandId]);
+  }, [dispatch, getBrandId]);
 
   useEffect(() => {
     if (isSuccess && createdBrand) {
-      toast.success("Brand Added Successfullly!");
+      toast.success("Brand Added Successfully!");
     }
     if (isSuccess && updatedBrand) {
-      toast.success("Brand Updated Successfullly!");
+      toast.success("Brand Updated Successfully!");
       navigate("/admin/list-brand");
     }
-
     if (isError) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading]);
+  }, [isSuccess, isError, isLoading, createdBrand, updatedBrand, navigate]);
+  
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {

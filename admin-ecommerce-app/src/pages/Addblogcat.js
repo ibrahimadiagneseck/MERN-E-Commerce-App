@@ -11,9 +11,11 @@ import {
   resetState,
   updateABlogCat,
 } from "../features/bcategory/bcategorySlice";
+
 let schema = yup.object().shape({
   title: yup.string().required("Category Name is Required"),
 });
+
 const Addblogcat = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,25 +30,35 @@ const Addblogcat = () => {
     blogCatName,
     updatedBlogCategory,
   } = newBlogCategory;
+
   useEffect(() => {
     if (getBlogCatId !== undefined) {
       dispatch(getABlogCat(getBlogCatId));
     } else {
       dispatch(resetState());
     }
-  }, [getBlogCatId]);
+  }, [dispatch, getBlogCatId]);
+
   useEffect(() => {
     if (isSuccess && createBlogCategory) {
-      toast.success("Blog Category Added Successfullly!");
+      toast.success("Blog Category Added Successfully!");
     }
     if (isSuccess && updatedBlogCategory) {
-      toast.success("Blog Category Updated Successfullly!");
+      toast.success("Blog Category Updated Successfully!");
       navigate("/admin/blog-category-list");
     }
     if (isError) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading]);
+  }, [
+    isSuccess, 
+    isError, 
+    isLoading, 
+    createBlogCategory, 
+    updatedBlogCategory, 
+    navigate
+  ]);
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -54,8 +66,8 @@ const Addblogcat = () => {
     },
     validationSchema: schema,
     onSubmit: (values) => {
-      const data = { id: getBlogCatId, blogCatData: values };
       if (getBlogCatId !== undefined) {
+        const data = { id: getBlogCatId, blogCatData: values };
         dispatch(updateABlogCat(data));
         dispatch(resetState());
       } else {
@@ -67,6 +79,7 @@ const Addblogcat = () => {
       }
     },
   });
+
   return (
     <div>
       <h3 className="mb-4  title">

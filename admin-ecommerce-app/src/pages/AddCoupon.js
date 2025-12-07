@@ -1,4 +1,4 @@
-import { React, useEffect, useState } from "react";
+import { useEffect } from "react";
 import CustomInput from "../components/CustomInput";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -17,6 +17,7 @@ let schema = yup.object().shape({
   expiry: yup.date().required("Expiry Date is Required"),
   discount: yup.number().required("Discount Percentage is Required"),
 });
+
 const AddCoupon = () => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -34,10 +35,12 @@ const AddCoupon = () => {
     couponExpiry,
     updatedCoupon,
   } = newCoupon;
+  
   const changeDateFormet = (date) => {
+    if (!date) return "";
     const newDate = new Date(date).toLocaleDateString();
     const [month, day, year] = newDate.split("/");
-    return [year, month, day].join("-");
+    return [year, month.padStart(2, '0'), day.padStart(2, '0')].join("-");
   };
 
   useEffect(() => {
@@ -46,20 +49,31 @@ const AddCoupon = () => {
     } else {
       dispatch(resetState());
     }
-  }, [getCouponId]);
+  }, [dispatch, getCouponId]);
 
   useEffect(() => {
     if (isSuccess && createdCoupon) {
-      toast.success("Coupon Added Successfullly!");
+      toast.success("Coupon Added Successfully!");
     }
     if (isSuccess && updatedCoupon) {
-      toast.success("Coupon Updated Successfullly!");
+      toast.success("Coupon Updated Successfully!");
       navigate("/admin/coupon-list");
     }
     if (isError && couponName && couponDiscount && couponExpiry) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading]);
+  }, [
+    isSuccess, 
+    isError, 
+    isLoading, 
+    createdCoupon, 
+    updatedCoupon, 
+    navigate,
+    couponName, 
+    couponDiscount, 
+    couponExpiry
+  ]);
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -77,7 +91,7 @@ const AddCoupon = () => {
         dispatch(createCoupon(values));
         formik.resetForm();
         setTimeout(() => {
-          dispatch(resetState);
+          dispatch(resetState());
         }, 300);
       }
     },
@@ -108,7 +122,7 @@ const AddCoupon = () => {
             onChng={formik.handleChange("expiry")}
             onBlr={formik.handleBlur("expiry")}
             val={formik.values.expiry}
-            label="Enter Expiry Data"
+            label="Enter Expiry Date"
             id="date"
           />
           <div className="error">

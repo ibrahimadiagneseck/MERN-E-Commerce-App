@@ -11,9 +11,11 @@ import {
   resetState,
   updateAProductCategory,
 } from "../features/pcategory/pcategorySlice";
+
 let schema = yup.object().shape({
   title: yup.string().required("Category Name is Required"),
 });
+
 const Addcat = () => {
   const dispatch = useDispatch();
   const location = useLocation();
@@ -28,25 +30,35 @@ const Addcat = () => {
     categoryName,
     updatedCategory,
   } = newCategory;
+
   useEffect(() => {
     if (getPCatId !== undefined) {
       dispatch(getAProductCategory(getPCatId));
     } else {
       dispatch(resetState());
     }
-  }, [getPCatId]);
+  }, [dispatch, getPCatId]);
+
   useEffect(() => {
     if (isSuccess && createdCategory) {
-      toast.success("Category Added Successfullly!");
+      toast.success("Category Added Successfully!");
     }
     if (isSuccess && updatedCategory) {
-      toast.success("Category Updated Successfullly!");
+      toast.success("Category Updated Successfully!");
       navigate("/admin/list-category");
     }
     if (isError) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading]);
+  }, [
+    isSuccess, 
+    isError, 
+    isLoading, 
+    createdCategory, 
+    updatedCategory, 
+    navigate  // Added missing dependencies
+  ]);
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -67,6 +79,7 @@ const Addcat = () => {
       }
     },
   });
+
   return (
     <div>
       <h3 className="mb-4  title">

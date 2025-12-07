@@ -46,9 +46,13 @@ const Couponlist = () => {
     setOpen(false);
   };
   const dispatch = useDispatch();
+  // useEffect(() => {
+  //   dispatch(getAllCoupon());
+  // }, []);
   useEffect(() => {
     dispatch(getAllCoupon());
-  }, []);
+  }, [dispatch]);
+
   const couponState = useSelector((state) => state.coupon.coupons);
   const data1 = [];
   for (let i = 0; i < couponState.length; i++) {

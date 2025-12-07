@@ -11,9 +11,11 @@ import {
   resetState,
   updateAColor,
 } from "../features/color/colorSlice";
+
 let schema = yup.object().shape({
   title: yup.string().required("Color is Required"),
 });
+
 const Addcolor = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -28,25 +30,28 @@ const Addcolor = () => {
     updatedColor,
     colorName,
   } = newColor;
+
   useEffect(() => {
     if (getColorId !== undefined) {
       dispatch(getAColor(getColorId));
     } else {
       dispatch(resetState());
     }
-  }, [getColorId]);
+  }, [dispatch, getColorId]);
+
   useEffect(() => {
     if (isSuccess && createdColor) {
-      toast.success("Color Added Successfullly!");
+      toast.success("Color Added Successfully!");
     }
     if (isSuccess && updatedColor) {
-      toast.success("Color Updated Successfullly!");
+      toast.success("Color Updated Successfully!");
       navigate("/admin/list-color");
     }
     if (isError) {
       toast.error("Something Went Wrong!");
     }
-  }, [isSuccess, isError, isLoading, createdColor]);
+  }, [isSuccess, isError, isLoading, createdColor, updatedColor, navigate]); // Added missing dependencies
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -67,6 +72,7 @@ const Addcolor = () => {
       }
     },
   });
+
   return (
     <div>
       <h3 className="mb-4 title">

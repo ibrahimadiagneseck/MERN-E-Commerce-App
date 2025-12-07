@@ -41,7 +41,7 @@ const Bloglist = () => {
   useEffect(() => {
     dispatch(resetState());
     dispatch(getBlogs());
-  }, []);
+  }, [dispatch]);
   const getBlogState = useSelector((state) => state.blogs.blogs);
   const data1 = [];
   for (let i = 0; i < getBlogState.length; i++) {
