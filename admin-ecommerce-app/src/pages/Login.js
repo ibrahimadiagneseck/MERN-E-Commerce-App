@@ -1,126 +1,293 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import CustomInput from "../components/CustomInput";
 import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
-import { login } from "../features/auth/authSlice";
+import { login, clearError, selectIsLoading, selectError, selectIsAuthenticated } from "../features/auth/authSlice";
 
-// Schéma de validation avec Yup pour le formulaire de login
-// Définit les règles de validation pour l'email et le mot de passe
-let schema = yup.object().shape({
+/**
+ * Schéma de validation Yup pour le formulaire de connexion
+ */
+const loginSchema = yup.object({
   email: yup
     .string()
-    .email("Email should be valid")  // Vérifie que l'email est valide
-    .required("Email is Required"),  // Champ obligatoire
-  password: yup.string().required("Password is Required"),  // Champ obligatoire
+    .email("Veuillez entrer un email valide")
+    .required("L'email est requis")
+    .matches(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Format d'email invalide"),
+  password: yup
+    .string()
+    .required("Le mot de passe est requis")
+    .min(6, "Le mot de passe doit contenir au moins 6 caractères"),
 });
 
+/**
+ * Composant de connexion
+ */
 const Login = () => {
-  // Initialisation des hooks React et Redux
-  const dispatch = useDispatch();  // Pour dispatcher des actions Redux
-  const navigate = useNavigate();  // Pour la navigation entre les pages
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   
-  // Configuration de Formik pour gérer le formulaire
+  // Sélecteurs optimisés
+  const isLoading = useSelector(selectIsLoading);
+  const error = useSelector(selectError);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  
+  // État local pour afficher/masquer le mot de passe
+  const [showPassword, setShowPassword] = useState(false);
+  
+  /**
+   * Configuration de Formik pour gérer le formulaire
+   */
   const formik = useFormik({
     initialValues: {
-      email: "",      // Valeur initiale de l'email
-      password: "",   // Valeur initiale du mot de passe
+      email: "",
+      password: "",
+      rememberMe: false,
     },
-    validationSchema: schema,  // Applique le schéma de validation Yup
+    validationSchema: loginSchema,
+    validateOnBlur: true,
+    validateOnChange: false,
     onSubmit: (values) => {
-      // Lors de la soumission du formulaire, dispatch l'action de login
-      dispatch(login(values));  // Envoie {email, password} au store Redux
+      // Efface les erreurs précédentes
+      dispatch(clearError());
+      
+      // Dispatch l'action de connexion
+      dispatch(login({
+        email: values.email.trim().toLowerCase(),
+        password: values.password,
+      }));
     },
   });
 
-  // Récupération de l'état d'authentification depuis le store Redux
-  const { user, isError, isSuccess, isLoading, message } = useSelector(
-    (state) => state.auth  // Accède au slice "auth" du store Redux
-  );
-
-  // Effet qui s'exécute lorsque l'état d'authentification change
+  /**
+   * Effet de redirection après connexion réussie
+   */
   useEffect(() => {
-    // Si la connexion est réussie et qu'on a un utilisateur
-    if (isSuccess && user) {
-      navigate("/admin");  // Redirige vers la page admin
+    if (isAuthenticated) {
+      // Délai pour montrer le succès avant redirection
+      const redirectTimer = setTimeout(() => {
+        navigate("/admin", { replace: true });
+      }, 500);
+      
+      return () => clearTimeout(redirectTimer);
     }
-    // Dépendances : l'effet se réexécute quand ces valeurs changent
-  }, [isSuccess, user, navigate]);
+  }, [isAuthenticated, navigate]);
+
+  /**
+   * Effet de nettoyage des erreurs au démontage
+   */
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  /**
+   * Gère la soumission manuelle du formulaire
+   */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    formik.handleSubmit();
+  };
+
+  /**
+   * Réinitialise le formulaire
+   */
+  const handleReset = () => {
+    formik.resetForm();
+    dispatch(clearError());
+  };
 
   return (
-    // Conteneur principal avec fond jaune
-    <div className="py-5" style={{ background: "#ffd333", minHeight: "100vh" }}>
-      <br />
-      <br />
-      <br />
-      <br />
-      <br />
-      
-      {/* Carte blanche contenant le formulaire */}
-      <div className="my-5 w-25 bg-white rounded-3 mx-auto p-4">
-        {/* Titre de la page */}
-        <h3 className="text-center title">Login</h3>
-        <p className="text-center">Login to your account to continue.</p>
+    <div 
+      className="d-flex align-items-center justify-content-center min-vh-100"
+      style={{ 
+        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      }}
+    >
+      {/* Carte de connexion */}
+      <div className="card shadow-lg border-0 rounded-lg" style={{ width: "100%", maxWidth: "420px" }}>
+        <div className="card-header bg-white border-0 text-center pt-4">
+          <h3 className="title mb-0">
+            <i className="bi bi-shield-lock me-2"></i>
+            Connexion Admin
+          </h3>
+          <p className="desc mt-2 mb-0">
+            Connectez-vous pour accéder au panneau d'administration
+          </p>
+        </div>
         
-        {/* Affichage des erreurs globales (si la connexion échoue) */}
-        {isError && (
-          <div className="alert alert-danger text-center">
-            {message?.message || "Login failed. Please try again."}
-          </div>
-        )}
+        <div className="card-body p-4">
+          {/* Message d'erreur */}
+          {error && (
+            <div 
+              className="alert alert-danger alert-dismissible fade show d-flex align-items-center" 
+              role="alert"
+            >
+              <i className="bi bi-exclamation-triangle-fill me-2"></i>
+              <div className="flex-grow-1">{error}</div>
+              <button 
+                type="button" 
+                className="btn-close" 
+                onClick={() => dispatch(clearError())}
+                aria-label="Fermer"
+              ></button>
+            </div>
+          )}
+          
+          {/* Message de succès (si connexion réussie) */}
+          {isAuthenticated && (
+            <div className="alert alert-success d-flex align-items-center" role="alert">
+              <i className="bi bi-check-circle-fill me-2"></i>
+              <div>Connexion réussie ! Redirection en cours...</div>
+            </div>
+          )}
+          
+          {/* Formulaire */}
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Champ Email */}
+            <div className="mb-3">
+              <CustomInput
+                type="email"
+                i_id="email"
+                i_class={formik.touched.email && formik.errors.email ? 'is-invalid' : ''}
+                name="email"
+                label="Adresse Email"
+                placeholder="admin@example.com"
+                val={formik.values.email}
+                onChng={formik.handleChange("email")}
+                onBlr={formik.handleBlur("email")}
+                disabled={isLoading}
+              />
+              {formik.touched.email && formik.errors.email && (
+                <div className="error mt-2 d-flex align-items-center">
+                  <i className="bi bi-x-circle-fill me-1"></i>
+                  {formik.errors.email}
+                </div>
+              )}
+            </div>
+            
+            {/* Champ Mot de passe - SIMPLIFIÉ et CORRIGÉ */}
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label fw-semibold mb-2">
+                <i className="bi bi-key me-2"></i>
+                Mot de passe
+              </label>
+              <div className="position-relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className={`form-control ${formik.touched.password && formik.errors.password ? 'is-invalid' : ''}`}
+                  id="password"
+                  placeholder="••••••••"
+                  name="password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange("password")}
+                  onBlur={formik.handleBlur("password")}
+                  disabled={isLoading}
+                  style={{
+                    boxShadow: "none",
+                    borderColor: "var(--color-c3d4da)",
+                    paddingRight: "45px"
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute top-50 end-0 translate-middle-y text-secondary"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    padding: "0 12px"
+                  }}
+                >
+                  <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} fs-5`}></i>
+                </button>
+              </div>
+              {formik.touched.password && formik.errors.password && (
+                <div className="error mt-2 d-flex align-items-center">
+                  <i className="bi bi-x-circle-fill me-1"></i>
+                  {formik.errors.password}
+                </div>
+              )}
+            </div>
+            
+            {/* Options supplémentaires */}
+            <div className="mb-4 d-flex justify-content-between align-items-center">
+              {/* <div className="form-check">
+                <input
+                  type="checkbox"
+                  className="form-check-input"
+                  id="rememberMe"
+                  checked={formik.values.rememberMe}
+                  onChange={formik.handleChange}
+                  disabled={isLoading}
+                />
+                <label className="form-check-label small" htmlFor="rememberMe">
+                  Se souvenir de moi
+                </label>
+              </div> */}
+              
+              <Link 
+                to="/forgot-password" 
+                className="text-decoration-none small"
+                style={{ color: "#667eea" }}
+              >
+                <i className="bi bi-question-circle me-1"></i>
+                Mot de passe oublié ?
+              </Link>
+            </div>
+            
+            {/* Boutons d'action */}
+            <div className="d-grid gap-2">
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg fw-semibold"
+                disabled={isLoading || !formik.isValid}
+                style={{ 
+                  backgroundColor: "var(--color-ffd333)", 
+                  borderColor: "var(--color-ffd333)",
+                  color: "#212529"
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Connexion en cours...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-box-arrow-in-right me-2"></i>
+                    Se connecter
+                  </>
+                )}
+              </button>
+              
+              {/* <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={handleReset}
+                disabled={isLoading}
+                style={{ 
+                  borderColor: "var(--color-828599)", 
+                  color: "var(--color-828599)" 
+                }}
+              >
+                <i className="bi bi-arrow-clockwise me-2"></i>
+                Réinitialiser
+              </button> */}
+            </div>
+          </form>
+        </div>
         
-        {/* Formulaire de connexion */}
-        <form onSubmit={formik.handleSubmit}>
-          {/* Champ Email */}
-          <CustomInput
-            type="email"  // Type email pour la validation navigateur
-            label="Email Address"  // Label du champ
-            id="email"  // ID pour l'accessibilité
-            name="email"  // Nom correspondant à l'état Formik
-            onChng={formik.handleChange("email")}  // Gère les changements de valeur
-            onBlr={formik.handleBlur("email")}  // Gère l'événement blur (perte de focus)
-            val={formik.values.email}  // Valeur courante du champ
-          />
-          {/* Affichage des erreurs de validation pour l'email */}
-          <div className="error mt-2">
-            {formik.touched.email && formik.errors.email}
-            {/* Affiche l'erreur seulement si le champ a été touché (focused puis blurred) */}
-          </div>
-          
-          {/* Champ Mot de passe */}
-          <CustomInput
-            type="password"  // Masque les caractères saisis
-            label="Password"
-            id="pass"
-            name="password"
-            onChng={formik.handleChange("password")}
-            onBlr={formik.handleBlur("password")}
-            val={formik.values.password}
-          />
-          {/* Affichage des erreurs de validation pour le mot de passe */}
-          <div className="error mt-2">
-            {formik.touched.password && formik.errors.password}
-          </div>
-          
-          {/* Lien "Mot de passe oublié" */}
-          <div className="mb-3 text-end">
-            <Link to="/forgot-password" className="">
-              Forgot Password?
-            </Link>
-          </div>
-          
-          {/* Bouton de soumission */}
-          <button
-            className="border-0 px-3 py-2 text-white fw-bold w-100 text-center text-decoration-none fs-5"
-            style={{ background: "#ffd333" }}  // Couleur jaune
-            type="submit"  // Type submit pour déclencher formik.handleSubmit
-            disabled={isLoading}  // Désactive le bouton pendant le chargement
-          >
-            {/* Affiche "Loading..." pendant la requête, sinon "Login" */}
-            {isLoading ? "Loading..." : "Login"}
-          </button>
-        </form>
+        {/* Footer de la carte */}
+        {/* <div className="card-footer bg-white border-0 text-center py-3">
+          <p className="desc mb-0">
+            <i className="bi bi-shield-check me-1"></i>
+            Votre connexion est sécurisée avec chiffrement SSL
+          </p>
+        </div> */}
       </div>
     </div>
   );

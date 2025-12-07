@@ -11,6 +11,7 @@ const getUserfromLocalStorage = localStorage.getItem("user")
 const initialState = {
   user: getUserfromLocalStorage,      // Utilisateur connecté (null si non connecté)
   orders: [],                         // Liste des commandes
+  orderbyuser: [],                    // Ajout de cette propriété manquante
   isError: false,                     // Indicateur d'erreur
   isLoading: false,                   // Indicateur de chargement
   isSuccess: false,                   // Indicateur de succès
@@ -25,8 +26,9 @@ export const login = createAsyncThunk(
       // Appel du service d'authentification
       return await authService.login(userData);
     } catch (error) {
-      // En cas d'erreur, rejeter avec la valeur de l'erreur
-      return thunkAPI.rejectWithValue(error);
+      // CORRECTION : Extraire seulement le message d'erreur, pas l'objet AxiosError complet
+      const errorMessage = error.response?.data?.message || error.message || "Erreur de connexion";
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -38,7 +40,9 @@ export const getOrders = createAsyncThunk(
     try {
       return await authService.getOrders();
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      // CORRECTION : Extraire seulement le message d'erreur
+      const errorMessage = error.response?.data?.message || error.message || "Erreur lors de la récupération des commandes";
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -50,7 +54,9 @@ export const getOrderByUser = createAsyncThunk(
     try {
       return await authService.getOrder(id);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error);
+      // CORRECTION : Extraire seulement le message d'erreur
+      const errorMessage = error.response?.data?.message || error.message || "Erreur lors de la récupération des commandes utilisateur";
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -59,9 +65,15 @@ export const getOrderByUser = createAsyncThunk(
 export const authSlice = createSlice({
   name: "auth",                       // Nom du slice
   initialState: initialState,         // État initial
-  reducers: {},                       // Reducers synchrones (aucun ici)
-  extraReducers: (buildeer) => {      // Gestion des thunks asynchrones
-    buildeer
+  reducers: {
+    // CORRECTION : Ajouter un reducer pour effacer les erreurs
+    clearError: (state) => {
+      state.isError = false;
+      state.message = "";
+    },
+  },                      
+  extraReducers: (builder) => {      // Gestion des thunks asynchrones - CORRECTION : typo "buildeer" -> "builder"
+    builder
       // Gestion du login
       .addCase(login.pending, (state) => {
         state.isLoading = true;       // Début du chargement
@@ -76,7 +88,8 @@ export const authSlice = createSlice({
       .addCase(login.rejected, (state, action) => {
         state.isError = true;         // Gestion des erreurs
         state.isSuccess = false;
-        state.message = action.error;
+        // CORRECTION : Utiliser action.payload au lieu de action.error
+        state.message = action.payload || "Erreur de connexion";
         state.isLoading = false;
       })
       
@@ -94,7 +107,8 @@ export const authSlice = createSlice({
       .addCase(getOrders.rejected, (state, action) => {
         state.isError = true;
         state.isSuccess = false;
-        state.message = action.error;
+        // CORRECTION : Utiliser action.payload au lieu de action.error
+        state.message = action.payload || "Erreur lors de la récupération des commandes";
         state.isLoading = false;
       })
       
@@ -112,11 +126,27 @@ export const authSlice = createSlice({
       .addCase(getOrderByUser.rejected, (state, action) => {
         state.isError = true;
         state.isSuccess = false;
-        state.message = action.error;
+        // CORRECTION : Utiliser action.payload au lieu de action.error
+        state.message = action.payload || "Erreur lors de la récupération des commandes utilisateur";
         state.isLoading = false;
       });
   },
 });
+
+// CORRECTION : Export des actions
+export const { clearError } = authSlice.actions;
+
+// AJOUT DES SELECTEURS MANQUANTS (nécessaires pour Login.js)
+export const selectIsLoading = (state) => state.auth.isLoading;
+export const selectError = (state) => state.auth.message;  // Note: message contient l'erreur
+export const selectIsAuthenticated = (state) => !!state.auth.user;
+
+// Autres selecteurs utiles
+export const selectUser = (state) => state.auth.user;
+export const selectOrders = (state) => state.auth.orders;
+export const selectUserOrders = (state) => state.auth.orderbyuser;
+export const selectIsSuccess = (state) => state.auth.isSuccess;
+export const selectIsError = (state) => state.auth.isError;
 
 // Export du reducer pour l'ajouter au store Redux
 export default authSlice.reducer;
