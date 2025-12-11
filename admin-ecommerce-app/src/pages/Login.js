@@ -4,7 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { useDispatch, useSelector } from "react-redux";
-import { login, clearError, selectIsLoading, selectError, selectIsAuthenticated } from "../features/auth/authSlice";
+import { 
+  login, 
+  clearAllMessages, 
+  selectIsLoading, 
+  selectError, 
+  selectIsAuthenticated,
+  selectSuccessMessage 
+} from "../features/auth/authSlice";
 
 /**
  * Schéma de validation Yup pour le formulaire de connexion
@@ -28,9 +35,10 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  // Sélecteurs optimisés
+  // Sélecteurs
   const isLoading = useSelector(selectIsLoading);
   const error = useSelector(selectError);
+  const successMessage = useSelector(selectSuccessMessage);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   
   // État local pour afficher/masquer le mot de passe
@@ -49,8 +57,8 @@ const Login = () => {
     validateOnBlur: true,
     validateOnChange: false,
     onSubmit: (values) => {
-      // Efface les erreurs précédentes
-      dispatch(clearError());
+      // Efface les messages précédents
+      dispatch(clearAllMessages());
       
       // Dispatch l'action de connexion
       dispatch(login({
@@ -65,21 +73,20 @@ const Login = () => {
    */
   useEffect(() => {
     if (isAuthenticated) {
-      // Délai pour montrer le succès avant redirection
       const redirectTimer = setTimeout(() => {
         navigate("/admin", { replace: true });
-      }, 500);
+      }, 1500); // Augmenté à 1.5s pour laisser voir le message de succès
       
       return () => clearTimeout(redirectTimer);
     }
   }, [isAuthenticated, navigate]);
 
   /**
-   * Effet de nettoyage des erreurs au démontage
+   * Effet de nettoyage des messages au démontage
    */
   useEffect(() => {
     return () => {
-      dispatch(clearError());
+      dispatch(clearAllMessages());
     };
   }, [dispatch]);
 
@@ -89,14 +96,6 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     formik.handleSubmit();
-  };
-
-  /**
-   * Réinitialise le formulaire
-   */
-  const handleReset = () => {
-    formik.resetForm();
-    dispatch(clearError());
   };
 
   return (
@@ -130,17 +129,17 @@ const Login = () => {
               <button 
                 type="button" 
                 className="btn-close" 
-                onClick={() => dispatch(clearError())}
+                onClick={() => dispatch(clearAllMessages())}
                 aria-label="Fermer"
               ></button>
             </div>
           )}
           
-          {/* Message de succès (si connexion réussie) */}
-          {isAuthenticated && (
+          {/* Message de succès */}
+          {successMessage && (
             <div className="alert alert-success d-flex align-items-center" role="alert">
               <i className="bi bi-check-circle-fill me-2"></i>
-              <div>Connexion réussie ! Redirection en cours...</div>
+              <div>{successMessage} Redirection en cours...</div>
             </div>
           )}
           
@@ -151,7 +150,7 @@ const Login = () => {
               <CustomInput
                 type="email"
                 i_id="email"
-                i_class={formik.touched.email && formik.errors.email ? 'is-invalid' : ''}
+                i_class={`form-control ${formik.touched.email && formik.errors.email ? 'is-invalid' : ''}`}
                 name="email"
                 label="Adresse Email"
                 placeholder="admin@example.com"
@@ -161,36 +160,29 @@ const Login = () => {
                 disabled={isLoading}
               />
               {formik.touched.email && formik.errors.email && (
-                <div className="error mt-2 d-flex align-items-center">
+                <div className="invalid-feedback d-flex align-items-center mt-1">
                   <i className="bi bi-x-circle-fill me-1"></i>
                   {formik.errors.email}
                 </div>
               )}
             </div>
             
-            {/* Champ Mot de passe - SIMPLIFIÉ et CORRIGÉ */}
+            {/* Champ Mot de passe avec CustomInput */}
             <div className="mb-3">
-              <label htmlFor="password" className="form-label fw-semibold mb-2">
-                <i className="bi bi-key me-2"></i>
-                Mot de passe
-              </label>
               <div className="position-relative">
-                <input
+                <CustomInput
                   type={showPassword ? "text" : "password"}
-                  className={`form-control ${formik.touched.password && formik.errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  placeholder="••••••••"
+                  i_id="password"
+                  i_class={`form-control ${formik.touched.password && formik.errors.password ? 'is-invalid' : ''}`}
                   name="password"
-                  value={formik.values.password}
-                  onChange={formik.handleChange("password")}
-                  onBlur={formik.handleBlur("password")}
+                  label="Mot de passe"
+                  placeholder="Mot de Passe"
+                  val={formik.values.password}
+                  onChng={formik.handleChange("password")}
+                  onBlr={formik.handleBlur("password")}
                   disabled={isLoading}
-                  style={{
-                    boxShadow: "none",
-                    borderColor: "var(--color-c3d4da)",
-                    paddingRight: "45px"
-                  }}
                 />
+                {/* Bouton pour afficher/masquer le mot de passe */}
                 <button
                   type="button"
                   className="btn btn-link position-absolute top-50 end-0 translate-middle-y text-secondary"
@@ -199,14 +191,16 @@ const Login = () => {
                   style={{
                     border: "none",
                     background: "transparent",
-                    padding: "0 12px"
+                    padding: "0 12px",
+                    marginTop: "12px", // Ajustement pour alignement avec CustomInput
+                    zIndex: 10
                   }}
                 >
                   <i className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} fs-5`}></i>
                 </button>
               </div>
               {formik.touched.password && formik.errors.password && (
-                <div className="error mt-2 d-flex align-items-center">
+                <div className="invalid-feedback d-flex align-items-center mt-1">
                   <i className="bi bi-x-circle-fill me-1"></i>
                   {formik.errors.password}
                 </div>
@@ -215,20 +209,6 @@ const Login = () => {
             
             {/* Options supplémentaires */}
             <div className="mb-4 d-flex justify-content-between align-items-center">
-              {/* <div className="form-check">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="rememberMe"
-                  checked={formik.values.rememberMe}
-                  onChange={formik.handleChange}
-                  disabled={isLoading}
-                />
-                <label className="form-check-label small" htmlFor="rememberMe">
-                  Se souvenir de moi
-                </label>
-              </div> */}
-              
               <Link 
                 to="/forgot-password" 
                 className="text-decoration-none small"
@@ -244,7 +224,7 @@ const Login = () => {
               <button
                 type="submit"
                 className="btn btn-primary btn-lg fw-semibold"
-                disabled={isLoading || !formik.isValid}
+                disabled={isLoading || !formik.isValid || isAuthenticated}
                 style={{ 
                   backgroundColor: "var(--color-ffd333)", 
                   borderColor: "var(--color-ffd333)",
@@ -263,31 +243,9 @@ const Login = () => {
                   </>
                 )}
               </button>
-              
-              {/* <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={handleReset}
-                disabled={isLoading}
-                style={{ 
-                  borderColor: "var(--color-828599)", 
-                  color: "var(--color-828599)" 
-                }}
-              >
-                <i className="bi bi-arrow-clockwise me-2"></i>
-                Réinitialiser
-              </button> */}
             </div>
           </form>
         </div>
-        
-        {/* Footer de la carte */}
-        {/* <div className="card-footer bg-white border-0 text-center py-3">
-          <p className="desc mb-0">
-            <i className="bi bi-shield-check me-1"></i>
-            Votre connexion est sécurisée avec chiffrement SSL
-          </p>
-        </div> */}
       </div>
     </div>
   );

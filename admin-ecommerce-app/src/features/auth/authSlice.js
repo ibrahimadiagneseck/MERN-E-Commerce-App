@@ -9,24 +9,23 @@ const getUserfromLocalStorage = localStorage.getItem("user")
 
 // État initial du slice d'authentification
 const initialState = {
-  user: getUserfromLocalStorage,      // Utilisateur connecté (null si non connecté)
-  orders: [],                         // Liste des commandes
-  orderbyuser: [],                    // Ajout de cette propriété manquante
-  isError: false,                     // Indicateur d'erreur
-  isLoading: false,                   // Indicateur de chargement
-  isSuccess: false,                   // Indicateur de succès
-  message: "",                        // Message d'état
+  user: getUserfromLocalStorage,
+  orders: [],
+  orderbyuser: [],
+  isError: false,
+  isLoading: false,
+  isSuccess: false,
+  errorMessage: "",  // Changement: séparer errorMessage
+  successMessage: "", // Changement: séparer successMessage
 };
 
 // Thunk asynchrone pour l'action de connexion
 export const login = createAsyncThunk(
-  "auth/login",                       // Nom de l'action
-  async (userData, thunkAPI) => {     // Fonction asynchrone
+  "auth/login",
+  async (userData, thunkAPI) => {
     try {
-      // Appel du service d'authentification
       return await authService.login(userData);
     } catch (error) {
-      // CORRECTION : Extraire seulement le message d'erreur, pas l'objet AxiosError complet
       const errorMessage = error.response?.data?.message || error.message || "Erreur de connexion";
       return thunkAPI.rejectWithValue(errorMessage);
     }
@@ -35,12 +34,11 @@ export const login = createAsyncThunk(
 
 // Thunk asynchrone pour récupérer toutes les commandes
 export const getOrders = createAsyncThunk(
-  "order/get-orders",                 // Nom de l'action
-  async (thunkAPI) => {               // Pas de paramètre, seulement thunkAPI
+  "order/get-orders",
+  async (thunkAPI) => {
     try {
       return await authService.getOrders();
     } catch (error) {
-      // CORRECTION : Extraire seulement le message d'erreur
       const errorMessage = error.response?.data?.message || error.message || "Erreur lors de la récupération des commandes";
       return thunkAPI.rejectWithValue(errorMessage);
     }
@@ -49,12 +47,11 @@ export const getOrders = createAsyncThunk(
 
 // Thunk asynchrone pour récupérer les commandes d'un utilisateur spécifique
 export const getOrderByUser = createAsyncThunk(
-  "order/get-order",                  // Nom de l'action
-  async (id, thunkAPI) => {           // Prend l'ID de l'utilisateur en paramètre
+  "order/get-order",
+  async (id, thunkAPI) => {
     try {
       return await authService.getOrder(id);
     } catch (error) {
-      // CORRECTION : Extraire seulement le message d'erreur
       const errorMessage = error.response?.data?.message || error.message || "Erreur lors de la récupération des commandes utilisateur";
       return thunkAPI.rejectWithValue(errorMessage);
     }
@@ -63,90 +60,113 @@ export const getOrderByUser = createAsyncThunk(
 
 // Création du slice Redux pour l'authentification
 export const authSlice = createSlice({
-  name: "auth",                       // Nom du slice
-  initialState: initialState,         // État initial
+  name: "auth",
+  initialState: initialState,
   reducers: {
-    // CORRECTION : Ajouter un reducer pour effacer les erreurs
     clearError: (state) => {
       state.isError = false;
-      state.message = "";
+      state.errorMessage = "";
     },
-  },                      
-  extraReducers: (builder) => {      // Gestion des thunks asynchrones - CORRECTION : typo "buildeer" -> "builder"
+    clearSuccess: (state) => {
+      state.isSuccess = false;
+      state.successMessage = "";
+    },
+    clearAllMessages: (state) => {
+      state.isError = false;
+      state.isSuccess = false;
+      state.errorMessage = "";
+      state.successMessage = "";
+    },
+    logout: (state) => {
+      state.user = null;
+      state.isSuccess = false;
+      state.isError = false;
+      state.errorMessage = "";
+      state.successMessage = "";
+      localStorage.removeItem("user");
+    }
+  },
+  extraReducers: (builder) => {
     builder
       // Gestion du login
       .addCase(login.pending, (state) => {
-        state.isLoading = true;       // Début du chargement
+        state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
+        state.errorMessage = "";
+        state.successMessage = "";
       })
       .addCase(login.fulfilled, (state, action) => {
-        state.isError = false;        // Réinitialisation des états
+        state.isError = false;
         state.isLoading = false;
         state.isSuccess = true;
-        state.user = action.payload;  // Stockage des données utilisateur
-        state.message = "success";
+        state.user = action.payload;
+        state.successMessage = "Connexion réussie";
+        state.errorMessage = "";
       })
       .addCase(login.rejected, (state, action) => {
-        state.isError = true;         // Gestion des erreurs
+        state.isError = true;
         state.isSuccess = false;
-        // CORRECTION : Utiliser action.payload au lieu de action.error
-        state.message = action.payload || "Erreur de connexion";
+        state.errorMessage = action.payload || "Erreur de connexion";
+        state.successMessage = "";
         state.isLoading = false;
       })
       
       // Gestion de la récupération des commandes
       .addCase(getOrders.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
       })
       .addCase(getOrders.fulfilled, (state, action) => {
         state.isError = false;
         state.isLoading = false;
         state.isSuccess = true;
-        state.orders = action.payload; // Stockage de toutes les commandes
-        state.message = "success";
+        state.orders = action.payload;
+        state.errorMessage = "";
       })
       .addCase(getOrders.rejected, (state, action) => {
         state.isError = true;
         state.isSuccess = false;
-        // CORRECTION : Utiliser action.payload au lieu de action.error
-        state.message = action.payload || "Erreur lors de la récupération des commandes";
+        state.errorMessage = action.payload || "Erreur lors de la récupération des commandes";
         state.isLoading = false;
       })
       
       // Gestion de la récupération des commandes par utilisateur
       .addCase(getOrderByUser.pending, (state) => {
         state.isLoading = true;
+        state.isSuccess = false;
+        state.isError = false;
       })
       .addCase(getOrderByUser.fulfilled, (state, action) => {
         state.isError = false;
         state.isLoading = false;
         state.isSuccess = true;
-        state.orderbyuser = action.payload; // Stockage des commandes de l'utilisateur
-        state.message = "success";
+        state.orderbyuser = action.payload;
+        state.errorMessage = "";
       })
       .addCase(getOrderByUser.rejected, (state, action) => {
         state.isError = true;
         state.isSuccess = false;
-        // CORRECTION : Utiliser action.payload au lieu de action.error
-        state.message = action.payload || "Erreur lors de la récupération des commandes utilisateur";
+        state.errorMessage = action.payload || "Erreur lors de la récupération des commandes utilisateur";
         state.isLoading = false;
       });
   },
 });
 
-// CORRECTION : Export des actions
-export const { clearError } = authSlice.actions;
+// Export des actions
+export const { clearError, clearSuccess, clearAllMessages, logout } = authSlice.actions;
 
-// AJOUT DES SELECTEURS MANQUANTS (nécessaires pour Login.js)
+// Selecteurs
 export const selectIsLoading = (state) => state.auth.isLoading;
-export const selectError = (state) => state.auth.message;  // Note: message contient l'erreur
+export const selectError = (state) => state.auth.errorMessage; // Utilise errorMessage
+export const selectSuccessMessage = (state) => state.auth.successMessage; // Utilise successMessage
 export const selectIsAuthenticated = (state) => !!state.auth.user;
-
-// Autres selecteurs utiles
+export const selectIsSuccess = (state) => state.auth.isSuccess;
+export const selectIsError = (state) => state.auth.isError;
 export const selectUser = (state) => state.auth.user;
 export const selectOrders = (state) => state.auth.orders;
 export const selectUserOrders = (state) => state.auth.orderbyuser;
-export const selectIsSuccess = (state) => state.auth.isSuccess;
-export const selectIsError = (state) => state.auth.isError;
 
-// Export du reducer pour l'ajouter au store Redux
+// Export du reducer
 export default authSlice.reducer;

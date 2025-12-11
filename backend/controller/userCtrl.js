@@ -61,12 +61,24 @@ const createUser = asyncHandler(async (req, res) => {
 
 
 
-// Login a user
+// Connexion d'un utilisateur
 const loginUserCtrl = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  // check if user exists or not
+  
+  // Vérifier si l'utilisateur existe
   const findUser = await User.findOne({ email });
-  if (findUser && (await findUser.isPasswordMatched(password))) {
+  
+  if (!findUser) {
+    throw new Error("Utilisateur non trouvé");
+  }
+  
+  // Vérifier si l'utilisateur est bloqué
+  if (findUser.isBlocked) {
+    throw new Error("Votre compte a été bloqué. Veuillez contacter l'administrateur.");
+  }
+  
+  // Vérifier le mot de passe
+  if (await findUser.isPasswordMatched(password)) {
     const refreshToken = await generateRefreshToken(findUser?._id);
 
     const updateuser = await User.findByIdAndUpdate(
@@ -91,22 +103,29 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
       token: generateToken(findUser?._id),
     });
   } else {
-    throw new Error("Invalid Credentials");
+    throw new Error("Mot de passe incorrect");
   }
 });
 
 // admin login
+// Connexion administrateur
 const loginAdmin = asyncHandler(async (req, res) => {
-
   const { email, password } = req.body;
 
-  // check if user exists or not
+  // Vérifier si l'utilisateur existe
   const findAdmin = await User.findOne({ email });
 
-  if (findAdmin.role !== "admin") throw new Error("Not Authorised");
+  // Ajouter une vérification d'existence de l'utilisateur
+  if (!findAdmin) {
+    throw new Error("Utilisateur non trouvé");
+  }
 
-  if (findAdmin && (await findAdmin.isPasswordMatched(password))) {
+  // Maintenant vérifier le rôle
+  if (findAdmin.role !== "admin") {
+    throw new Error("Non autorisé");
+  }
 
+  if (await findAdmin.isPasswordMatched(password)) {
     const refreshToken = await generateRefreshToken(findAdmin?._id);
 
     const updateuser = await User.findByIdAndUpdate(
@@ -130,9 +149,8 @@ const loginAdmin = asyncHandler(async (req, res) => {
       mobile: findAdmin?.mobile,
       token: generateToken(findAdmin?._id),
     });
-
   } else {
-    throw new Error("Invalid Credentials");
+    throw new Error("Identifiants invalides");
   }
 });
 
