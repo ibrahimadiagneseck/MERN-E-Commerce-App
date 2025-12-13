@@ -7,6 +7,9 @@ import Header from "./Header";
 // `Footer` peut contenir des informations de contact, liens, copyright, etc.
 import Footer from "./Footer";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 // Déclaration du composant `Layout`, qui définit la structure générale de la page.
 const Layout = () => {
     
@@ -21,6 +24,20 @@ const Layout = () => {
 
             {/* Affiche le composant `Footer` en bas de la page */}
             <Footer/>
+
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            
         </>
     );
 };
