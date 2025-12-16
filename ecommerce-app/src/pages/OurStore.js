@@ -4,7 +4,8 @@
 import BreadCrumb from "../components/BreadCrumb";
 import Meta from "../components/Meta";
 import ReactStars from "react-rating-stars-component";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import ProductCard from "../components/ProductCard";
 import Color from "../components/Color";
 import watch from "../images/watch.jpg";
@@ -13,10 +14,23 @@ import gr3 from "../images/gr3.svg";
 import gr2 from "../images/gr2.svg";
 import gr from "../images/gr.svg";
 import Container from "../components-others/Container";
+import { getAllProducts } from "../features/product/productSlice";
 
 const OurStore = () => {
 
     const [grid, setGrid] = useState(4);
+
+    const productState = useSelector((state) => state?.product?.product);
+
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const getProducts = () => {
+            dispatch(getAllProducts());
+        };
+        
+        getProducts();
+    }, [dispatch]);
 
     return (
         <>
@@ -206,7 +220,7 @@ const OurStore = () => {
                             </div>
                             <div className="products-list pb-5">
                                 <div className="d-flex gap-10 flex-wrap">
-                                    <ProductCard grid={grid} />
+                                    <ProductCard data={productState ? productState : []} grid={grid} />
                                 </div>
                             </div>
                         </div>

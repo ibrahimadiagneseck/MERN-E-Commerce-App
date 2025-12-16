@@ -42,11 +42,15 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+const getCustomerfromLocalStorage = localStorage.getItem("customer")
+  ? JSON.parse(localStorage.getItem("customer"))
+  : null;
+
 // ----------------------
 //   INITIAL STATE
 // ----------------------
 const initialState = {
-  user: null,
+  user: getCustomerfromLocalStorage,
   isError: false,
   isSuccess: false,
   isLoading: false,

@@ -7,7 +7,7 @@ import CustomInput from "../components-others/CustomInput";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../features/user/userSlice"; // ← Correction du nom
+import { loginUser } from "../features/user/userSlice"; 
 import { useEffect } from "react";
 
 const loginSchema = yup.object({
@@ -33,20 +33,27 @@ const Login = () => {
     },
   });
 
+  // Extraire resetForm explicitement
+  const { resetForm } = formik;
+
   // Redirection après succès
   useEffect(() => {
+    let timer;
+    
     if (isSuccess && user) {
       // Réinitialiser le formulaire
-      formik.resetForm();
+      resetForm();
       
       // Rediriger vers la page d'accueil après un court délai
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         navigate("/");
       }, 1500);
-      
-      return () => clearTimeout(timer);
     }
-  }, [isSuccess, user, navigate, formik]);
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isSuccess, user, navigate, resetForm]);
 
   return (
     <>
