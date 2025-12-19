@@ -14,7 +14,7 @@ import gr3 from "../images/gr3.svg";
 import gr2 from "../images/gr2.svg";
 import gr from "../images/gr.svg";
 import Container from "../components-others/Container";
-import { getAllProducts } from "../features/product/productSlice";
+import { getAllProducts } from "../features/products/productSlice";
 
 const OurStore = () => {
 

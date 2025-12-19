@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from "react-router-dom";
 import ReactStars from "react-rating-stars-component";
 import { useDispatch } from "react-redux";
-import { addToWishlist } from "../features/product/productSlice";
+import { addToWishlist } from "../features/products/productSlice";
 
 // Import des images
 import wishIcon from "../images/wish.svg";

@@ -9,6 +9,7 @@ import watch from "../images/watch.jpg";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getUserProductWishlist } from "../features/user/userSlice";
+import { addToWishlist } from "../features/products/productSlice";
 
 
 
@@ -25,6 +26,13 @@ const Wishlist = () => {
 
         getWishlist();
     }, [dispatch]);
+
+    const removeFromWishlist = (id) => {
+        dispatch(addToWishlist(id)); 
+        setTimeout(() => {
+            dispatch(getUserProductWishlist());
+        }, 300);
+    };
 
     // Fonction pour obtenir l'URL d'une image de manière sécurisée
         const getImageUrl = (item, index) => {
@@ -54,12 +62,15 @@ const Wishlist = () => {
             <BreadCrumb title="Wishlist" />
             <Container className="wishlist-wrapper home-wrapper-2 py-5">
                 <div className="row">
+                    { (!wishlistState || wishlistState.length === 0) && 
+                        <div className="text-center fs-3">No Data</div>
+                    }
                     {
                         wishlistState?.map((item, index) => {
                             return (
                                 <div className="col-3" key={index}>
                                     <div className="wishlist-card position-relative">
-                                        <img src={cross} alt="cross" className="position-absolute cross img-fluid" />
+                                        <img onClick={ () => { removeFromWishlist(item?._id) }} src={cross} alt="cross" className="position-absolute cross img-fluid" />
                                         <div className="wishlist-card-image bg-white">
                                             <img src={getImageUrl(item, 0)}  className="img-fluid d-block mx-auto" width={160} alt="watch" />
                                         </div>

@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../features/user/userSlice";
 // import customerReducer from "../features/cutomers/customerSlice";
-import productReducer from "../features/product/productSlice";
+import productReducer from "../features/products/productSlice";
 // import brandReducer from "../features/brand/brandSlice";
 // import pCategoryReducer from "../features/pcategory/pcategorySlice";
 // import bCategoryReducer from "../features/bcategory/bcategorySlice";
-// import blogReducer from "../features/blogs/blogSlice";
+import blogReducer from "../features/blogs/blogSlice";
 // import colorReducer from "../features/color/colorSlice";
 // import enquiryReducer from "../features/enquiry/enquirySlice";
 // import uploadReducer from "../features/upload/uploadSlice";
@@ -18,7 +18,7 @@ export const store = configureStore({
     // brand: brandReducer,
     // pCategory: pCategoryReducer,
     // bCategory: bCategoryReducer,
-    // blogs: blogReducer,
+    blogs: blogReducer,
     // color: colorReducer,
     // enquiry: enquiryReducer,
     // upload: uploadReducer,
