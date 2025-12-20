@@ -7,7 +7,7 @@ import { blogService } from "./blogService";
 
 
 export const getAllBlogs = createAsyncThunk(
-  "blog/get",
+  "blogs/get",
   async (thunkAPI) => {
     try {
       const response = await blogService.getBlogs();
@@ -25,9 +25,28 @@ export const getAllBlogs = createAsyncThunk(
 );
 
 
+export const getBlog = createAsyncThunk(
+  "blog/get",
+  async (id, thunkAPI) => {
+    try {
+      const response = await blogService.getBlog(id);
+      return response;
+    } catch (error) {
+      // Correction: Changer "Registration failed" par "Login failed"
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "failed"; 
+
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+
 
 const blogState = {
-  product: '',
+  blog: '',
   isError: false,
   isSuccess: false,
   isLoading: false,
@@ -55,8 +74,23 @@ export const blogSlice = createSlice({
         state.isSuccess = false;
         state.message = action.error;
       })
+
+      .addCase(getBlog.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getBlog.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.singleBlog = action.payload;
+      })
+      .addCase(getBlog.rejected, (state, action) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.isSuccess = false;
+        state.message = action.error;
+      });
   }
 });
 
-// export const { resetState, logout } = authSlice.actions;
 export default blogSlice.reducer;

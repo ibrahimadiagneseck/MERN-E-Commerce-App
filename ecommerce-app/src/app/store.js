@@ -18,7 +18,7 @@ export const store = configureStore({
     // brand: brandReducer,
     // pCategory: pCategoryReducer,
     // bCategory: bCategoryReducer,
-    blogs: blogReducer,
+    blog: blogReducer,
     // color: colorReducer,
     // enquiry: enquiryReducer,
     // upload: uploadReducer,

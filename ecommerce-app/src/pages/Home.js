@@ -5,6 +5,11 @@ import BlogCard from "../components/BlogCard";
 import ProductCard from "../components/ProductCard";
 import SpecialProduct from "../components/SpecialProduct";
 import Container from "../components-others/Container";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllBlogs } from "../features/blogs/blogSlice";
+import watchImage from "../images/watch.jpg"; // Image de secours
+import moment from "moment"; // Pour formater les dates
 
 import {
   services,
@@ -16,6 +21,37 @@ import {
 } from "../utils/Service";
 
 const Home = () => {
+
+  const blogState = useSelector((state) => state?.blog?.blog);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getBlogs = () => {
+      dispatch(getAllBlogs());
+    };
+    getBlogs();
+  }, [dispatch]);
+
+  const blogs = blogState && Array.isArray(blogState) ? blogState : [];
+
+  const getImageUrl = (item, index) => {
+
+    if (!item?.images || !Array.isArray(item.images)) {
+      return index === 0 ? watchImage : watchImage;
+    }
+
+    if (item.images.length > index) {
+      if (item.images[index]?.url) {
+        return item.images[index].url;
+      }
+      if (typeof item.images[index] === 'string') {
+        return item.images[index];
+      }
+    }
+
+    return index === 0 ? watchImage : watchImage;
+  };
+
   return (
     <>
       {/* MAIN BANNER */}
@@ -149,8 +185,8 @@ const Home = () => {
         <div className="container-xxl">
           <div className="marquee-inner-wrapper card-wrapper">
             <Marquee className="d-flex">
-              {brands.map((b, idx) => (
-                <div className="mx-4 w-25" key={idx}>
+              {brands.map((b, id) => (
+                <div className="mx-4 w-25" key={id}>
                   <img src={b.image} alt={b.title} />
                 </div>
               ))}
@@ -164,11 +200,26 @@ const Home = () => {
         <div className="container-xxl">
           <h3 className="section-heading">Our Latest Blogs</h3>
           <div className="row">
-            {[0, 1, 2, 3].map((_, i) => (
+            {/* {[0, 1, 2, 3].map((_, i) => (
               <div className="col-3" key={i}>
                 <BlogCard />
               </div>
-            ))}
+            ))} */}
+
+            {
+              blogs?.slice(0, 4).map((item, index) => (
+                <div className="col-3" key={index}>
+                  <BlogCard
+                    id={item?._id}
+                    title={item?.title}
+                    description={item?.description}
+                    image={getImageUrl(item, 0)}
+                    date={moment(item?.createdAt).format("MMMM Do YYYY, h:mm a")}
+                  />
+                </div>
+              ))
+
+            }
           </div>
         </div>
       </Container>
