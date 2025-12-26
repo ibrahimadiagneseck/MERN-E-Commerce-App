@@ -1,16 +1,21 @@
 // src/pages/Home.js
 import Marquee from "react-fast-marquee";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import BlogCard from "../components/BlogCard";
-import ProductCard from "../components/ProductCard";
 import SpecialProduct from "../components/SpecialProduct";
 import Container from "../components-others/Container";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllBlogs } from "../features/blogs/blogSlice";
-import watchImage from "../images/watch.jpg"; // Image de secours
-import moment from "moment"; // Pour formater les dates
+import watchImage from "../images/watch.jpg"; 
+import moment from "moment"; 
 
+import ReactStars from "react-rating-stars-component";
+import wishIcon from "../images/wish.svg";
+import prodcompareIcon from "../images/prodcompare.svg";
+import viewIcon from "../images/view.svg";
+import addcartIcon from "../images/add-cart.svg";
+import { addToWishlist, getAllProducts } from "../features/products/productSlice";
 import {
   services,
   categories,
@@ -22,17 +27,33 @@ import {
 
 const Home = () => {
 
+  const navigate = useNavigate();
+
+  const addToWishList = (id) => {
+      dispatch(addToWishlist(id));
+  };
+
   const blogState = useSelector((state) => state?.blog?.blog);
+  const productState = useSelector((state) => state?.product?.products);
+
   const dispatch = useDispatch();
 
   useEffect(() => {
+
     const getBlogs = () => {
       dispatch(getAllBlogs());
     };
+    const getProducts = () => {
+      dispatch(getAllProducts());
+    };
+
     getBlogs();
+    getProducts();
+
   }, [dispatch]);
 
   const blogs = blogState && Array.isArray(blogState) ? blogState : [];
+  const products = productState && Array.isArray(productState) ? productState : [];
 
   const getImageUrl = (item, index) => {
 
@@ -51,6 +72,7 @@ const Home = () => {
 
     return index === 0 ? watchImage : watchImage;
   };
+
 
   return (
     <>
@@ -126,15 +148,91 @@ const Home = () => {
 
       {/* FEATURED COLLECTION */}
       <Container class1="featured-wrapper py-5 home-wrapper-2">
+        <h3 className="section-heading">Featured Collection</h3>
         <div className="row">
-          <div className="col-12">
-            <h3 className="section-heading">Featured Collection</h3>
+            {products && products.length > 0 ? (
+              products.map((item, index) => {
+                if (item.tags.includes("featured")) {
+                  // Convertir totalrating en nombre pour ReactStars
+                const ratingValue = item?.totalrating ? 
+                    (typeof item.totalrating === 'string' ? 
+                        parseFloat(item.totalrating) : 
+                        Number(item.totalrating)) 
+                    : 0;
+
+                  return (
+                    <div
+                      key={item?._id || index}
+                      className="col-3"
+                    >
+                      <div className="product-card position-relative">
+                        <div className="wishlist-icon position-absolute">
+                          <button
+                            className="border-0 bg-transparent"
+                            onClick={(e) => {
+                              e.preventDefault(); // empêche le rechargement de la page // Prevent link navigation
+                              addToWishList(item?._id);
+                            }}
+                          >
+                            <img src={wishIcon} alt="wishlist" />
+                          </button>
+                        </div>
+                        <div className="product-image">
+                          <img
+                            src={getImageUrl(item, 0)}
+                            className="img-fluid mx-auto"
+                            width={160}
+                            alt={item?.title || "product"}
+                          />
+                          <img
+                            src={getImageUrl(item, 1)}
+                            className="img-fluid mx-auto"
+                            width={160}
+                            alt={item?.title || "product"}
+                          />
+                        </div>
+                        <div className="product-details">
+                          <h6 className="brand">{item?.brand || "Unknown Brand"}</h6>
+                          <h5 className="product-title">
+                            {item?.title || "Product Title"}
+                          </h5>
+                          <ReactStars
+                            count={5}
+                            size={24}
+                            value={ratingValue}
+                            edit={false}
+                            activeColor="#ffd700"
+                          />
+
+                          <p className="price">${item?.price || "0.00"}</p>
+                        </div>
+                        <div className="action-bar position-absolute">
+                          <div className="d-flex flex-column gap-15">
+                            <button className="border-0 bg-transparent">
+                              <img src={prodcompareIcon} alt="compare" />
+                            </button>
+                          </div>
+                          <div className="d-flex flex-column">
+                            <button className="border-0 bg-transparent">
+                              <img onClick={() => navigate("/product/" + item?._id)} src={viewIcon} alt="view" />
+                            </button> 
+                          </div>
+                          <div className="d-flex flex-column">
+                            <button className="border-0 bg-transparent">
+                              <img src={addcartIcon} alt="addcart" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+                return null; // Important: retourner null pour les autres éléments
+              })
+            ) : (
+              <p>No products available</p>
+            )}
           </div>
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-          <ProductCard />
-        </div>
       </Container>
 
       {/* FAMOUS PRODUCTS */}
@@ -159,10 +257,25 @@ const Home = () => {
         <div className="container-xxl">
           <h3 className="section-heading">Special Products</h3>
           <div className="row">
-            <SpecialProduct />
-            <SpecialProduct />
-            <SpecialProduct />
-            <SpecialProduct />
+            {products && products.length > 0 ? (
+              products.map((item, index) => {
+                if (item.tags.includes("special")) {
+                  return <SpecialProduct 
+                    key={index}
+                    id={item?._id}
+                    brand={item?.brand}
+                    title={item?.title}
+                    totalrating={item?.totalrating.toString()}
+                    price={item?.price}
+                    sold={item?.sold}
+                    quantity={item?.quantity}
+                  />;
+                }
+                return null; // Important: retourner null pour les autres éléments
+              })
+            ) : (
+              <p>No products available</p>
+            )}
           </div>
         </div>
       </Container>
@@ -172,10 +285,89 @@ const Home = () => {
         <div className="container-xxl">
           <h3 className="section-heading">Our Popular Products</h3>
           <div className="row">
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
-            <ProductCard />
+            {products && products.length > 0 ? (
+              products.map((item, index) => {
+                if (item.tags.includes("popular")) {
+
+                  // Convertir totalrating en nombre pour ReactStars
+                const ratingValue = item?.totalrating ? 
+                    (typeof item.totalrating === 'string' ? 
+                        parseFloat(item.totalrating) : 
+                        Number(item.totalrating)) 
+                    : 0;
+
+                  return (
+                    <div
+                      key={item?._id || index}
+                      className="col-3"
+                    >
+                      <div className="product-card position-relative">
+                        <div className="wishlist-icon position-absolute">
+                          <button
+                            className="border-0 bg-transparent"
+                            onClick={(e) => {
+                              e.preventDefault(); // empêche le rechargement de la page // Prevent link navigation
+                              addToWishList(item?._id);
+                            }}
+                          >
+                            <img src={wishIcon} alt="wishlist" />
+                          </button>
+                        </div>
+                        <div className="product-image">
+                          <img
+                            src={getImageUrl(item, 0)}
+                            className="img-fluid mx-auto"
+                            width={160}
+                            alt={item?.title || "product"}
+                          />
+                          <img
+                            src={getImageUrl(item, 1)}
+                            className="img-fluid mx-auto"
+                            width={160}
+                            alt={item?.title || "product"}
+                          />
+                        </div>
+                        <div className="product-details">
+                          <h6 className="brand">{item?.brand || "Unknown Brand"}</h6>
+                          <h5 className="product-title">
+                            {item?.title || "Product Title"}
+                          </h5>
+                          <ReactStars
+                            count={5}
+                            size={24}
+                            value={ratingValue}
+                            edit={false}
+                            activeColor="#ffd700"
+                          />
+
+                          <p className="price">${item?.price || "0.00"}</p>
+                        </div>
+                        <div className="action-bar position-absolute">
+                          <div className="d-flex flex-column gap-15">
+                            <button className="border-0 bg-transparent">
+                              <img src={prodcompareIcon} alt="compare" />
+                            </button>
+                          </div>
+                          <div className="d-flex flex-column">
+                            <button className="border-0 bg-transparent">
+                              <img onClick={() => navigate("/product/" + item?._id)} src={viewIcon} alt="view" />
+                            </button>
+                          </div>
+                          <div className="d-flex flex-column">
+                            <button className="border-0 bg-transparent">
+                              <img src={addcartIcon} alt="addcart" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+                return null; // Important: retourner null pour les autres éléments
+              })
+            ) : (
+              <p>No products available</p>
+            )}
           </div>
         </div>
       </Container>

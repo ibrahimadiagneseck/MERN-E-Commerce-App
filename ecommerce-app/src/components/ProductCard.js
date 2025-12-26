@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { Link, useLocation } from "react-router-dom";
 import ReactStars from "react-rating-stars-component";
 import { useDispatch } from "react-redux";
@@ -68,10 +68,7 @@ const ProductCard = (props) => {
                         key={item?._id || index}
                         className={`${location.pathname === "/products" ? `gr-${grid}` : "col-3"}`}
                     >
-                        <Link 
-                            to={`/product/${item?._id || '1'}`} 
-                            className="product-card position-relative"
-                        >
+                        <div className="product-card position-relative">
                             <div className="wishlist-icon position-absolute">
                                 <button 
                                     className="border-0 bg-transparent" 
@@ -125,9 +122,9 @@ const ProductCard = (props) => {
                                     </button>
                                 </div>
                                 <div className="d-flex flex-column">
-                                    <button className="border-0 bg-transparent">
+                                    <Link to={'/product/' + item?._id} className="border-0 bg-transparent">
                                         <img src={viewIcon} alt="view" />
-                                    </button>
+                                    </Link>
                                 </div>
                                 <div className="d-flex flex-column">
                                     <button className="border-0 bg-transparent">
@@ -135,7 +132,7 @@ const ProductCard = (props) => {
                                     </button>
                                 </div>
                             </div>
-                        </Link>
+                        </div>
                     </div>
                 );
             })}

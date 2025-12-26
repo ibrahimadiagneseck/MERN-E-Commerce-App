@@ -20,7 +20,7 @@ const OurStore = () => {
 
     const [grid, setGrid] = useState(4);
 
-    const productState = useSelector((state) => state?.product?.product);
+    const productState = useSelector((state) => state?.product?.products);
 
     const dispatch = useDispatch();
 
@@ -191,29 +191,29 @@ const OurStore = () => {
                                             <option value="created-descending">Date, new to old</option>
                                         </select>
                                     </div>
-                                    <div class="d-flex align-items-center gap-10">
-                                        <p class="totalproducts mb-0">21 Products</p>
-                                        <div class="d-flex gap-10 align-items-center grid">
+                                    <div className="d-flex align-items-center gap-10">
+                                        <p className="totalproducts mb-0">21 Products</p>
+                                        <div className="d-flex gap-10 align-items-center grid">
                                             <img onClick={
                                                 () => {
                                                     setGrid(3);
                                                 }
-                                            } src={gr4} class="d-block img-fluid" alt="grid" />
+                                            } src={gr4} className="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(4);
                                                 }
-                                            } src={gr3} class="d-block img-fluid" alt="grid" />
+                                            } src={gr3} className="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(6);
                                                 }
-                                            } src={gr2} class="d-block img-fluid" alt="grid" />
+                                            } src={gr2} className="d-block img-fluid" alt="grid" />
                                             <img onClick={
                                                 () => {
                                                     setGrid(12);
                                                 }
-                                            } src={gr} class="d-block img-fluid" alt="grid" />
+                                            } src={gr} className="d-block img-fluid" alt="grid" />
                                         </div>
                                     </div> 
                                 </div>

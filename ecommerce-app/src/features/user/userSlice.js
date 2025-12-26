@@ -53,6 +53,23 @@ export const getUserProductWishlist = createAsyncThunk(
   }
 );
 
+export const addProdToCart = createAsyncThunk(
+  "user/cart/add",
+  async (cartData, thunkAPI) => {
+    try {
+      return await authService.addToCart(cartData); 
+    } catch (error) {
+      // Extraire uniquement les données sérialisables
+      const errorData = {
+        message: error.response?.data?.message || error.message || "Failed to add to cart",
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      };
+      return thunkAPI.rejectWithValue(errorData);
+    }
+  }
+);
+
 const getCustomerfromLocalStorage = localStorage.getItem("customer")
   ? JSON.parse(localStorage.getItem("customer"))
   : null;
@@ -162,6 +179,25 @@ export const authSlice = createSlice({
         state.isSuccess = false;
         state.message = action.error;
       })
+
+      .addCase(addProdToCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addProdToCart.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.cartProduct = action.payload;
+        if (state.success) {
+          toast.success("Product Added to Cart");
+        }
+      })
+      .addCase(addProdToCart.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.error;
+      });
   },
 });
 

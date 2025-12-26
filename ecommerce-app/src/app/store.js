@@ -7,7 +7,7 @@ import productReducer from "../features/products/productSlice";
 // import bCategoryReducer from "../features/bcategory/bcategorySlice";
 import blogReducer from "../features/blogs/blogSlice";
 // import colorReducer from "../features/color/colorSlice";
-// import enquiryReducer from "../features/enquiry/enquirySlice";
+import enquiryReducer from "../features/enquiry/enquirySlice";
 // import uploadReducer from "../features/upload/uploadSlice";
 // import couponReducer from "../features/coupon/couponSlice";
 export const store = configureStore({
@@ -20,7 +20,7 @@ export const store = configureStore({
     // bCategory: bCategoryReducer,
     blog: blogReducer,
     // color: colorReducer,
-    // enquiry: enquiryReducer,
+    enquiry: enquiryReducer,
     // upload: uploadReducer,
     // coupon: couponReducer,
   },
