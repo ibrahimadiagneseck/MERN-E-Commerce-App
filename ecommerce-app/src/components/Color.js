@@ -10,7 +10,7 @@ const Color = (props) => {
                 {colorData && colorData.length > 0 ? (
                     colorData.map((color, index) => (
                         <li 
-                        onClick={() => setColor()} 
+                        onClick={() => setColor(color)} 
                         key={index} 
                         style={{ backgroundColor: color }} // applique la couleur en arrière-plan
                         ></li>

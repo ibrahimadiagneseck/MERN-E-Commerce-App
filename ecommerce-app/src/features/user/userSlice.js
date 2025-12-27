@@ -57,15 +57,18 @@ export const addProdToCart = createAsyncThunk(
   "user/cart/add",
   async (cartData, thunkAPI) => {
     try {
-      return await authService.addToCart(cartData); 
+      return await authService.addToCart(cartData);
     } catch (error) {
-      // Extraire uniquement les données sérialisables
-      const errorData = {
-        message: error.response?.data?.message || error.message || "Failed to add to cart",
-        status: error.response?.status,
-        statusText: error.response?.statusText
-      };
-      return thunkAPI.rejectWithValue(errorData);
+      const message = error.response?.data?.message || error.message || "Failed to add to cart";
+      
+      // Gérer les erreurs spécifiques
+      if (error.response?.status === 401) {
+        toast.error("Please login to add items to cart");
+      } else {
+        toast.error(message);
+      }
+      
+      return thunkAPI.rejectWithValue({ message });
     }
   }
 );

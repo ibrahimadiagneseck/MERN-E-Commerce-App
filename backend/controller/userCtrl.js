@@ -415,77 +415,310 @@ const getWishlist = asyncHandler(async (req, res) => {
   }
 });
 
-// Middleware pour gérer le panier de l'utilisateur
-const userCart = asyncHandler(async (req, res) => {
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-  // Récupère le panier depuis le corps de la requête et l'ID utilisateur depuis la requête (après authentification)
+const userCart = asyncHandler(async (req, res) => {
   const { cart } = req.body;
   const { _id } = req.user;
 
-  // Vérifie si l'ID utilisateur est valide en utilisant une fonction de validation d'ID MongoDB
   validateMongoDbId(_id);
 
   try {
-    // Initialise un tableau vide pour stocker les produits du panier
-    let products = [];
-
-    // Récupère l'utilisateur depuis la base de données en fonction de son ID
     const user = await User.findById(_id);
-
-    // Vérifie si le panier existe déjà pour cet utilisateur
-    const alreadyExistCart = await Cart.findOne({ orderby: user._id });
-
-    // Si un panier existe déjà, il est supprimé pour en créer un nouveau
-    if (alreadyExistCart) {
-      alreadyExistCart.deleteOne();
+    
+    // Si l'utilisateur n'a pas encore de panier, initialisez-le
+    if (!user.cart) {
+      user.cart = {
+        products: [],
+        cartTotal: 0,
+        totalAfterDiscount: 0
+      };
     }
-
-    // Boucle sur chaque produit dans le panier pour structurer les informations nécessaires
+    
+    // Fusionner le panier existant avec les nouveaux produits
+    const existingProductsMap = new Map();
+    
+    user.cart.products.forEach(item => {
+      const key = `${item.product.toString()}_${item.color}`;
+      existingProductsMap.set(key, item);
+    });
+    
+    // Traiter chaque nouvel élément
     for (let i = 0; i < cart.length; i++) {
-      let object = {};
-
-      // Associe l'ID, la quantité et la couleur du produit
-      object.product = cart[i]._id;
-      object.count = cart[i].count;
-      object.color = cart[i].color;
-
-      // Récupère uniquement le champ "price" du produit spécifié par son ID dans le panier
-      let getPrice = await Product
-        .findById(cart[i]._id) // Recherche le produit par son ID dans la base de données
-        .select("price")       // Sélectionne uniquement le champ "price" pour optimiser la requête
-        .exec();               // Exécute la requête et attend le résultat avec "await"
-
-
-      // Associe le prix récupéré au produit
-      object.price = getPrice.price;
-
-      // Ajoute le produit structuré au tableau des produits
-      products.push(object);
+      const newItem = cart[i];
+      const key = `${newItem._id}_${newItem.color}`;
+      
+      // Récupérer les infos du produit (prix)
+      let getPrice = await Product.findById(newItem._id).select("price").exec();
+      
+      // Vérifier si le produit existe déjà dans le panier
+      if (existingProductsMap.has(key)) {
+        // Produit existant : ajouter la quantité
+        const existingItem = existingProductsMap.get(key);
+        existingItem.count += newItem.count;
+        existingItem.price = getPrice.price; // Mettre à jour le prix
+      } else {
+        // Nouveau produit : l'ajouter au panier
+        user.cart.products.push({
+          product: newItem._id,
+          count: newItem.count,
+          color: newItem.color,
+          price: getPrice.price
+        });
+      }
     }
-
-    // Initialise la variable de calcul du total du panier
-    let cartTotal = 0;
-
-    // Boucle sur les produits pour calculer le total du panier (prix * quantité pour chaque produit)
-    for (let i = 0; i < products.length; i++) {
-      cartTotal = cartTotal + products[i].price * products[i].count;
-    }
-
-    // Crée un nouveau panier avec les produits, le total et l'utilisateur qui a passé la commande
-    let newCart = await new Cart({
-      products,
-      cartTotal,
-      orderby: user?._id,
-    }).save(); // Sauvegarde le panier dans la base de données
-
-    // Retourne le panier nouvellement créé en réponse
-    res.json(newCart);
-
+    
+    // Recalculer le total
+    user.cart.cartTotal = user.cart.products.reduce((total, product) => {
+      return total + (product.price * product.count);
+    }, 0);
+    
+    user.cart.totalAfterDiscount = user.cart.cartTotal;
+    
+    // Sauvegarder les modifications
+    await user.save();
+    
+    // Populer les informations des produits pour la réponse
+    const populatedUser = await User.findById(_id)
+      .populate("cart.products.product", "title price images")
+      .select("cart");
+    
+    res.json(populatedUser.cart);
+    
   } catch (error) {
-    // En cas d'erreur, lance une nouvelle erreur pour la gestion des erreurs
     throw new Error(error);
   }
 });
+
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+// const userCart = asyncHandler(async (req, res) => {
+//   const { cart } = req.body;
+//   const { _id } = req.user;
+
+//   validateMongoDbId(_id);
+
+//   try {
+//     const user = await User.findById(_id);
+    
+//     // Récupérer le panier existant
+//     let existingCart = await Cart.findOne({ orderby: user._id });
+    
+//     // Si pas de panier existant, créer un nouveau
+//     if (!existingCart) {
+//       return await createNewCart(cart, user, res);
+//     }
+    
+//     // Si panier existant, fusionner avec les nouveaux produits
+//     return await mergeCarts(existingCart, cart, user, res);
+    
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+// const userCart = asyncHandler(async (req, res) => {
+//   const { cart } = req.body;
+//   const { _id } = req.user;
+
+//   validateMongoDbId(_id);
+
+//   try {
+//     const user = await User.findById(_id);
+    
+//     // Traitement du modèle Cart (comme avant)
+//     let existingCart = await Cart.findOne({ orderby: user._id });
+    
+//     if (!existingCart) {
+//       existingCart = await createNewCart(cart, user);
+//     } else {
+//       existingCart = await mergeCarts(existingCart, cart, user);
+//     }
+    
+//     // Mettre à jour le champ cart dans User avec les mêmes données
+//     user.cart = existingCart.products; // Stocker une copie dans User
+//     await user.save();
+    
+//     res.json(existingCart);
+    
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// });
+
+// // Fonction pour créer un nouveau panier
+// const createNewCart = async (cart, user, res) => {
+//   let products = [];
+  
+//   for (let i = 0; i < cart.length; i++) {
+//     let productInfo = await getProductInfo(cart[i]);
+//     products.push(productInfo);
+//   }
+  
+//   let cartTotal = calculateCartTotal(products);
+  
+//   let newCart = await new Cart({
+//     products,
+//     cartTotal,
+//     totalAfterDiscount: cartTotal,
+//     orderby: user._id,
+//   }).save();
+  
+//   res.json(newCart);
+// };
+
+// // Fonction pour fusionner les paniers
+// const mergeCarts = async (existingCart, newCartItems, user, res) => {
+//   // Créer une map du panier existant pour recherche rapide
+//   const existingProductsMap = new Map();
+  
+//   existingCart.products.forEach(item => {
+//     const key = `${item.product.toString()}_${item.color}`;
+//     existingProductsMap.set(key, item);
+//   });
+  
+//   // Traiter chaque nouvel élément
+//   for (let i = 0; i < newCartItems.length; i++) {
+//     const newItem = newCartItems[i];
+//     const key = `${newItem._id}_${newItem.color}`;
+    
+//     // Récupérer les infos du produit (prix)
+//     let productInfo = await getProductInfo(newItem);
+    
+//     // Vérifier si le produit existe déjà dans le panier
+//     if (existingProductsMap.has(key)) {
+//       // Produit existant : ajouter la quantité
+//       const existingItem = existingProductsMap.get(key);
+//       existingItem.count += newItem.count;
+//       existingItem.price = productInfo.price; // Mettre à jour le prix au cas où il a changé
+//     } else {
+//       // Nouveau produit : l'ajouter au panier
+//       existingCart.products.push(productInfo);
+//     }
+//   }
+  
+//   // Recalculer le total
+//   existingCart.cartTotal = calculateCartTotal(existingCart.products);
+//   existingCart.totalAfterDiscount = existingCart.cartTotal;
+  
+//   // Sauvegarder les modifications
+//   await existingCart.save();
+  
+//   res.json(existingCart);
+// };
+
+// // Fonction pour récupérer les informations d'un produit
+// const getProductInfo = async (cartItem) => {
+//   let getPrice = await Product
+//     .findById(cartItem._id)
+//     .select("price")
+//     .exec();
+
+//   return {
+//     product: cartItem._id,
+//     count: cartItem.count,
+//     color: cartItem.color,
+//     price: getPrice.price
+//   };
+// };
+
+// // Fonction pour calculer le total du panier
+// const calculateCartTotal = (products) => {
+//   return products.reduce((total, product) => {
+//     return total + (product.price * product.count);
+//   }, 0);
+// };
+
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+
+// // Middleware pour gérer le panier de l'utilisateur
+// const userCart = asyncHandler(async (req, res) => {
+
+//   // Récupère le panier depuis le corps de la requête et l'ID utilisateur depuis la requête (après authentification)
+//   const { cart } = req.body;
+//   const { _id } = req.user;
+
+//   // Vérifie si l'ID utilisateur est valide en utilisant une fonction de validation d'ID MongoDB
+//   validateMongoDbId(_id);
+
+//   try {
+//     // Initialise un tableau vide pour stocker les produits du panier
+//     let products = [];
+
+//     // Récupère l'utilisateur depuis la base de données en fonction de son ID
+//     const user = await User.findById(_id);
+
+//     // Vérifie si le panier existe déjà pour cet utilisateur
+//     const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+
+//     // Si un panier existe déjà, il est supprimé pour en créer un nouveau
+//     if (alreadyExistCart) {
+//       alreadyExistCart.deleteOne();
+//     }
+
+//     // Boucle sur chaque produit dans le panier pour structurer les informations nécessaires
+//     for (let i = 0; i < cart.length; i++) {
+//       let object = {};
+
+//       // Associe l'ID, la quantité et la couleur du produit
+//       object.product = cart[i]._id;
+//       object.count = cart[i].count;
+//       object.color = cart[i].color;
+
+//       // Récupère uniquement le champ "price" du produit spécifié par son ID dans le panier
+//       let getPrice = await Product
+//         .findById(cart[i]._id) // Recherche le produit par son ID dans la base de données
+//         .select("price")       // Sélectionne uniquement le champ "price" pour optimiser la requête
+//         .exec();               // Exécute la requête et attend le résultat avec "await"
+
+
+//       // Associe le prix récupéré au produit
+//       object.price = getPrice.price;
+
+//       // Ajoute le produit structuré au tableau des produits
+//       products.push(object);
+//     }
+
+//     // Initialise la variable de calcul du total du panier
+//     let cartTotal = 0;
+
+//     // Boucle sur les produits pour calculer le total du panier (prix * quantité pour chaque produit)
+//     for (let i = 0; i < products.length; i++) {
+//       cartTotal = cartTotal + products[i].price * products[i].count;
+//     }
+
+//     // Crée un nouveau panier avec les produits, le total et l'utilisateur qui a passé la commande
+//     let newCart = await new Cart({
+//       products,
+//       cartTotal,
+//       orderby: user?._id,
+//     }).save(); // Sauvegarde le panier dans la base de données
+
+//     // **CRITIQUE: Mettre à jour également le champ cart dans User**
+//     await User.findByIdAndUpdate(
+//         _id,
+//         {
+//             cart: products, // Mettre à jour le champ cart de User
+//             // cartTotal: cartTotal // Optionnel: ajouter un champ cartTotal à User
+//         },
+//         { new: true }
+//     );
+
+//     // Retourne le panier nouvellement créé en réponse
+//     res.json(newCart);
+
+//   } catch (error) {
+//     // En cas d'erreur, lance une nouvelle erreur pour la gestion des erreurs
+//     throw new Error(error);
+//   }
+// });
 
 
 const getUserCart = asyncHandler(async (req, res) => {

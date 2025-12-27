@@ -46,20 +46,40 @@ const SingleProduct = () => {
 
     const [colorProd, setColor] = useState(null);
     const [quantityProd, setQuantity] = useState(1);
+    
 
     const uploadCart = () => {
+        if (!product) {
+            toast.error("Product not loaded");
+            return;
+        }
+
         if (colorProd === null) {
             toast.error("Please Choose Color");
-            return false;
-        } else {
-            dispatch(addProdToCart({
-                    productId: productId,
-                    product: product,
-                    color: colorProd,
-                    quantity: quantityProd
-                })
-            );
+            return;
         }
+
+        if (quantityProd < 1) {
+            toast.error("Quantity must be at least 1");
+            return;
+        }
+
+        // Créer l'objet cart conforme au backend
+        const cartData = {
+            cart: [
+                {
+                    _id: productId,
+                    count: Number(quantityProd),
+                    color: colorProd
+                    // price: colorProd
+                }
+            ]
+        };
+
+        console.log(cartData);
+        
+
+        dispatch(addProdToCart(cartData));
     };
 
     const getImageUrl = (item, index) => {
@@ -281,7 +301,7 @@ const SingleProduct = () => {
                                         i_class=""
                                         name="quantity"
                                         min={1}
-                                        max={10}
+                                        max={product?.quantity || 10}
                                         onChng={(e) => { setQuantity(e.target.value) }} // Ajoutez un gestionnaire vide
                                         onBlr={() => { }}  // Ajoutez aussi onBlr pour être complet
                                         val={quantityProd} // valeur par défaut
@@ -299,8 +319,25 @@ const SingleProduct = () => {
                                         </button> */}
 
                                         {/* Avec paramètres, on DOIT utiliser la version avec fonction fléchée */}
-                                        <button className="button border-0" type="button" 
+                                        {/* <button className="button border-0" type="button"
                                             onClick={() => uploadCart(productId, quantityProd)}>
+                                            Add to Cart
+                                        </button> */}
+
+                                        {/* <button 
+                                            className="button border-0" 
+                                            type="button" 
+                                            onClick={uploadCart}
+                                            disabled={!product || !colorProd}
+                                        >
+                                            Add to Cart
+                                        </button> */}
+
+                                        <button 
+                                            className="button border-0" 
+                                            type="button" 
+                                            onClick={uploadCart}
+                                        >
                                             Add to Cart
                                         </button>
 

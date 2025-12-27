@@ -36,9 +36,30 @@ var userSchema = new mongoose.Schema(
       type: Boolean, // Type de données pour le statut de blocage
       default: false, // Valeur par défaut (non bloqué)
     },
+    // cart: {
+    //   type: Array, // Type de données pour le panier
+    //   default: [], // Valeur par défaut (tableau vide)
+    // },
     cart: {
-      type: Array, // Type de données pour le panier
-      default: [], // Valeur par défaut (tableau vide)
+      products: [
+        {
+          product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+          },
+          count: Number,
+          color: String,
+          price: Number,
+        },
+      ],
+      cartTotal: {
+        type: Number,
+        default: 0,
+      },
+      totalAfterDiscount: {
+        type: Number,
+        default: 0,
+      },
     },
     address: {
       type: String, // Type de données pour l'adresse
