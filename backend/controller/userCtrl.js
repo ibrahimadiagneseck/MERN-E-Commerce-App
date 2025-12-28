@@ -1,6 +1,6 @@
 const User = require("../models/userModel");
 const Product = require("../models/productModel");
-const Cart = require("../models/cartModel");
+// const Cart = require("../models/cartModel");
 const Coupon = require("../models/couponModel");
 const Order = require("../models/orderModel");
 const uniqid = require("uniqid");
@@ -12,6 +12,7 @@ const { generateRefreshToken } = require("../config/refreshtoken");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("./emailCtrl");
+const { log } = require("console");
 
 
 // Create a User ----------------------------------------------
@@ -415,19 +416,40 @@ const getWishlist = asyncHandler(async (req, res) => {
   }
 });
 
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 const userCart = asyncHandler(async (req, res) => {
-  const { cart } = req.body;
+
+  const { productId, color, quantity } = req.body;
   const { _id } = req.user;
 
-  validateMongoDbId(_id);
-
   try {
+    // Validation des champs requis
+    if (!productId || !color || !quantity) {
+      return res.status(400).json({
+        success: false,
+        message: "productId, color and quantity are required"
+      });
+    }
+
+    // Valider les IDs avec votre fonction
+    validateMongoDbId(_id);
+    validateMongoDbId(productId);
+
+    // Fonction pour arrondir à 2 décimales
+    const roundToTwoDecimals = (num) => {
+      return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+    };
+
+    // Trouver l'utilisateur
     const user = await User.findById(_id);
-    
-    // Si l'utilisateur n'a pas encore de panier, initialisez-le
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Initialiser le panier si nécessaire
     if (!user.cart) {
       user.cart = {
         products: [],
@@ -435,319 +457,298 @@ const userCart = asyncHandler(async (req, res) => {
         totalAfterDiscount: 0
       };
     }
-    
-    // Fusionner le panier existant avec les nouveaux produits
-    const existingProductsMap = new Map();
-    
-    user.cart.products.forEach(item => {
-      const key = `${item.product.toString()}_${item.color}`;
-      existingProductsMap.set(key, item);
-    });
-    
-    // Traiter chaque nouvel élément
-    for (let i = 0; i < cart.length; i++) {
-      const newItem = cart[i];
-      const key = `${newItem._id}_${newItem.color}`;
-      
-      // Récupérer les infos du produit (prix)
-      let getPrice = await Product.findById(newItem._id).select("price").exec();
-      
-      // Vérifier si le produit existe déjà dans le panier
-      if (existingProductsMap.has(key)) {
-        // Produit existant : ajouter la quantité
-        const existingItem = existingProductsMap.get(key);
-        existingItem.count += newItem.count;
-        existingItem.price = getPrice.price; // Mettre à jour le prix
-      } else {
-        // Nouveau produit : l'ajouter au panier
-        user.cart.products.push({
-          product: newItem._id,
-          count: newItem.count,
-          color: newItem.color,
-          price: getPrice.price
-        });
-      }
+
+    // S'assurer que products est un tableau
+    if (!Array.isArray(user.cart.products)) {
+      user.cart.products = [];
     }
+
+    // Trouver le produit
+    const product = await Product.findById(productId).select("price title quantity").exec();
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found"
+      });
+    }
+
+    // Valider et arrondir le prix du produit
+    const productPrice = roundToTwoDecimals(product.price);
+    const validatedQuantity = parseInt(quantity) || 1;
+
+    // Calculer le subtotal pour ce produit
+    const subtotal = roundToTwoDecimals(productPrice * validatedQuantity);
+
+    // Vérifier si le produit existe déjà dans le panier
+    const existingProductIndex = user.cart.products.findIndex(
+      item => {
+        const itemProductId = item.product._id ? 
+          item.product._id.toString() : 
+          item.product.toString();
+        return itemProductId === productId && item.color === color;
+      }
+    );
     
-    // Recalculer le total
-    user.cart.cartTotal = user.cart.products.reduce((total, product) => {
-      return total + (product.price * product.count);
-    }, 0);
-    
+    if (existingProductIndex > -1) {
+      // Mettre à jour le produit existant
+      user.cart.products[existingProductIndex].count += validatedQuantity;
+      user.cart.products[existingProductIndex].price = productPrice;
+      user.cart.products[existingProductIndex].subtotal = roundToTwoDecimals(
+        user.cart.products[existingProductIndex].price * user.cart.products[existingProductIndex].count
+      );
+    } else {
+      // Ajouter un nouveau produit
+      user.cart.products.push({
+        product: productId,
+        count: validatedQuantity,
+        color: color,
+        price: productPrice,
+        subtotal: subtotal
+      });
+    }
+
+    // Fonction pour calculer le total du panier
+    const calculateCartTotal = (products) => {
+      const total = products.reduce((sum, item) => {
+        return sum + roundToTwoDecimals(item.subtotal || 0);
+      }, 0);
+      return roundToTwoDecimals(total);
+    };
+
+    // Mettre à jour les totaux
+    user.cart.cartTotal = calculateCartTotal(user.cart.products);
     user.cart.totalAfterDiscount = user.cart.cartTotal;
     
     // Sauvegarder les modifications
     await user.save();
-    
-    // Populer les informations des produits pour la réponse
+
+    // Préparer la réponse avec les données peuplées
     const populatedUser = await User.findById(_id)
-      .populate("cart.products.product", "title price images")
+      .populate("cart.products.product", "title price images quantity category brand")
       .select("cart");
+
+    // Formater les données de la réponse
+    const formatCartResponse = (cart) => {
+      if (!cart) return null;
+      
+      const formattedCart = {
+        ...cart.toObject(),
+        cartTotal: roundToTwoDecimals(cart.cartTotal),
+        totalAfterDiscount: roundToTwoDecimals(cart.totalAfterDiscount)
+      };
+
+      if (Array.isArray(cart.products)) {
+        formattedCart.products = cart.products.map(item => {
+          // S'assurer que le subtotal est toujours présent
+          const itemPrice = roundToTwoDecimals(item.price);
+          const itemCount = parseInt(item.count) || 0;
+          const itemSubtotal = item.subtotal ? roundToTwoDecimals(item.subtotal) : roundToTwoDecimals(itemPrice * itemCount);
+          
+          return {
+            ...item.toObject ? item.toObject() : item,
+            price: itemPrice,
+            count: itemCount,
+            subtotal: itemSubtotal
+          };
+        });
+      }
+
+      return formattedCart;
+    };
+
+    const formattedCart = formatCartResponse(populatedUser.cart);
     
-    res.json(populatedUser.cart);
-    
+    res.json({
+      success: true,
+      message: "Product added to cart successfully",
+      cart: formattedCart
+    });
+
   } catch (error) {
-    throw new Error(error);
+    // Gérer les erreurs de validation MongoDB
+    if (error.message.includes("not valid")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    console.error("Error in userCart:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Internal server error"
+    });
   }
 });
 
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-// const userCart = asyncHandler(async (req, res) => {
-//   const { cart } = req.body;
-//   const { _id } = req.user;
-
-//   validateMongoDbId(_id);
-
-//   try {
-//     const user = await User.findById(_id);
-    
-//     // Récupérer le panier existant
-//     let existingCart = await Cart.findOne({ orderby: user._id });
-    
-//     // Si pas de panier existant, créer un nouveau
-//     if (!existingCart) {
-//       return await createNewCart(cart, user, res);
-//     }
-    
-//     // Si panier existant, fusionner avec les nouveaux produits
-//     return await mergeCarts(existingCart, cart, user, res);
-    
-//   } catch (error) {
-//     throw new Error(error);
-//   }
-// });
-
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-// const userCart = asyncHandler(async (req, res) => {
-//   const { cart } = req.body;
-//   const { _id } = req.user;
-
-//   validateMongoDbId(_id);
-
-//   try {
-//     const user = await User.findById(_id);
-    
-//     // Traitement du modèle Cart (comme avant)
-//     let existingCart = await Cart.findOne({ orderby: user._id });
-    
-//     if (!existingCart) {
-//       existingCart = await createNewCart(cart, user);
-//     } else {
-//       existingCart = await mergeCarts(existingCart, cart, user);
-//     }
-    
-//     // Mettre à jour le champ cart dans User avec les mêmes données
-//     user.cart = existingCart.products; // Stocker une copie dans User
-//     await user.save();
-    
-//     res.json(existingCart);
-    
-//   } catch (error) {
-//     throw new Error(error);
-//   }
-// });
-
-// // Fonction pour créer un nouveau panier
-// const createNewCart = async (cart, user, res) => {
-//   let products = [];
-  
-//   for (let i = 0; i < cart.length; i++) {
-//     let productInfo = await getProductInfo(cart[i]);
-//     products.push(productInfo);
-//   }
-  
-//   let cartTotal = calculateCartTotal(products);
-  
-//   let newCart = await new Cart({
-//     products,
-//     cartTotal,
-//     totalAfterDiscount: cartTotal,
-//     orderby: user._id,
-//   }).save();
-  
-//   res.json(newCart);
-// };
-
-// // Fonction pour fusionner les paniers
-// const mergeCarts = async (existingCart, newCartItems, user, res) => {
-//   // Créer une map du panier existant pour recherche rapide
-//   const existingProductsMap = new Map();
-  
-//   existingCart.products.forEach(item => {
-//     const key = `${item.product.toString()}_${item.color}`;
-//     existingProductsMap.set(key, item);
-//   });
-  
-//   // Traiter chaque nouvel élément
-//   for (let i = 0; i < newCartItems.length; i++) {
-//     const newItem = newCartItems[i];
-//     const key = `${newItem._id}_${newItem.color}`;
-    
-//     // Récupérer les infos du produit (prix)
-//     let productInfo = await getProductInfo(newItem);
-    
-//     // Vérifier si le produit existe déjà dans le panier
-//     if (existingProductsMap.has(key)) {
-//       // Produit existant : ajouter la quantité
-//       const existingItem = existingProductsMap.get(key);
-//       existingItem.count += newItem.count;
-//       existingItem.price = productInfo.price; // Mettre à jour le prix au cas où il a changé
-//     } else {
-//       // Nouveau produit : l'ajouter au panier
-//       existingCart.products.push(productInfo);
-//     }
-//   }
-  
-//   // Recalculer le total
-//   existingCart.cartTotal = calculateCartTotal(existingCart.products);
-//   existingCart.totalAfterDiscount = existingCart.cartTotal;
-  
-//   // Sauvegarder les modifications
-//   await existingCart.save();
-  
-//   res.json(existingCart);
-// };
-
-// // Fonction pour récupérer les informations d'un produit
-// const getProductInfo = async (cartItem) => {
-//   let getPrice = await Product
-//     .findById(cartItem._id)
-//     .select("price")
-//     .exec();
-
-//   return {
-//     product: cartItem._id,
-//     count: cartItem.count,
-//     color: cartItem.color,
-//     price: getPrice.price
-//   };
-// };
-
-// // Fonction pour calculer le total du panier
-// const calculateCartTotal = (products) => {
-//   return products.reduce((total, product) => {
-//     return total + (product.price * product.count);
-//   }, 0);
-// };
-
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-// \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
-// // Middleware pour gérer le panier de l'utilisateur
-// const userCart = asyncHandler(async (req, res) => {
-
-//   // Récupère le panier depuis le corps de la requête et l'ID utilisateur depuis la requête (après authentification)
-//   const { cart } = req.body;
-//   const { _id } = req.user;
-
-//   // Vérifie si l'ID utilisateur est valide en utilisant une fonction de validation d'ID MongoDB
-//   validateMongoDbId(_id);
-
-//   try {
-//     // Initialise un tableau vide pour stocker les produits du panier
-//     let products = [];
-
-//     // Récupère l'utilisateur depuis la base de données en fonction de son ID
-//     const user = await User.findById(_id);
-
-//     // Vérifie si le panier existe déjà pour cet utilisateur
-//     const alreadyExistCart = await Cart.findOne({ orderby: user._id });
-
-//     // Si un panier existe déjà, il est supprimé pour en créer un nouveau
-//     if (alreadyExistCart) {
-//       alreadyExistCart.deleteOne();
-//     }
-
-//     // Boucle sur chaque produit dans le panier pour structurer les informations nécessaires
-//     for (let i = 0; i < cart.length; i++) {
-//       let object = {};
-
-//       // Associe l'ID, la quantité et la couleur du produit
-//       object.product = cart[i]._id;
-//       object.count = cart[i].count;
-//       object.color = cart[i].color;
-
-//       // Récupère uniquement le champ "price" du produit spécifié par son ID dans le panier
-//       let getPrice = await Product
-//         .findById(cart[i]._id) // Recherche le produit par son ID dans la base de données
-//         .select("price")       // Sélectionne uniquement le champ "price" pour optimiser la requête
-//         .exec();               // Exécute la requête et attend le résultat avec "await"
-
-
-//       // Associe le prix récupéré au produit
-//       object.price = getPrice.price;
-
-//       // Ajoute le produit structuré au tableau des produits
-//       products.push(object);
-//     }
-
-//     // Initialise la variable de calcul du total du panier
-//     let cartTotal = 0;
-
-//     // Boucle sur les produits pour calculer le total du panier (prix * quantité pour chaque produit)
-//     for (let i = 0; i < products.length; i++) {
-//       cartTotal = cartTotal + products[i].price * products[i].count;
-//     }
-
-//     // Crée un nouveau panier avec les produits, le total et l'utilisateur qui a passé la commande
-//     let newCart = await new Cart({
-//       products,
-//       cartTotal,
-//       orderby: user?._id,
-//     }).save(); // Sauvegarde le panier dans la base de données
-
-//     // **CRITIQUE: Mettre à jour également le champ cart dans User**
-//     await User.findByIdAndUpdate(
-//         _id,
-//         {
-//             cart: products, // Mettre à jour le champ cart de User
-//             // cartTotal: cartTotal // Optionnel: ajouter un champ cartTotal à User
-//         },
-//         { new: true }
-//     );
-
-//     // Retourne le panier nouvellement créé en réponse
-//     res.json(newCart);
-
-//   } catch (error) {
-//     // En cas d'erreur, lance une nouvelle erreur pour la gestion des erreurs
-//     throw new Error(error);
-//   }
-// });
-
-
+// Fonction pour récupérer le panier
 const getUserCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
+
   try {
-    const cart = await Cart.findOne({ orderby: _id }).populate(
-      "products.product"
-    );
-    res.json(cart);
+    const user = await User.findById(_id)
+      .populate("cart.products.product", "title price images quantity category brand")
+      .select("cart");
+    
+    if (!user.cart) {
+      return res.json({
+        products: [],
+        cartTotal: 0,
+        totalAfterDiscount: 0
+      });
+    }
+
+    // Fonction pour arrondir à 2 décimales
+    const roundToTwoDecimals = (num) => {
+      return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+    };
+
+    // Recalculer les subtotals s'ils ne sont pas présents
+    if (user.cart.products && user.cart.products.length > 0) {
+      user.cart.products.forEach(item => {
+        if (!item.subtotal) {
+          item.subtotal = roundToTwoDecimals(item.price * item.count);
+        }
+      });
+
+      // Recalculer le total du panier
+      user.cart.cartTotal = user.cart.products.reduce((total, item) => {
+        return total + roundToTwoDecimals(item.subtotal);
+      }, 0);
+
+      user.cart.totalAfterDiscount = user.cart.cartTotal;
+
+      // Sauvegarder si des modifications ont été apportées
+      await user.save();
+    }
+    
+    res.json(user.cart);
   } catch (error) {
     throw new Error(error);
   }
 });
 
+// Fonction pour vider le panier
 const emptyCart = asyncHandler(async (req, res) => {
   const { _id } = req.user;
   validateMongoDbId(_id);
+
   try {
-    // Recherche l'utilisateur par son ID
-    const user = await User.findOne({ _id });
-
-    // Utilise findOneAndDelete pour supprimer le panier associé à l'utilisateur
-    const cart = await Cart.findOneAndDelete({ orderby: user._id });
-
-    // Retourne la réponse avec le contenu du panier supprimé
-    res.json(cart);
+    const user = await User.findByIdAndUpdate(
+      _id,
+      {
+        $set: { 
+          cart: {
+            products: [],
+            cartTotal: 0,
+            totalAfterDiscount: 0
+          }
+        }
+      },
+      { new: true }
+    );
+    
+    res.json(user.cart);
   } catch (error) {
-    // Lève une erreur si quelque chose se passe mal
+    throw new Error(error);
+  }
+});
+
+// Fonction pour supprimer un produit du panier
+const removeProductFromCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { productId, color } = req.body;
+  
+  validateMongoDbId(_id);
+  validateMongoDbId(productId);
+
+  try {
+    const user = await User.findById(_id);
+    
+    if (!user.cart || !user.cart.products) {
+      return res.status(404).json({ message: "Cart is empty" });
+    }
+
+    // Fonction pour arrondir à 2 décimales
+    const roundToTwoDecimals = (num) => {
+      return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+    };
+    
+    // Filtrer les produits pour retirer celui spécifié
+    user.cart.products = user.cart.products.filter(
+      item => !(item.product.toString() === productId && item.color === color)
+    );
+    
+    // Recalculer le total du panier
+    user.cart.cartTotal = user.cart.products.reduce((total, item) => {
+      return total + roundToTwoDecimals(item.subtotal || 0);
+    }, 0);
+    
+    user.cart.totalAfterDiscount = user.cart.cartTotal;
+    
+    await user.save();
+    
+    res.json(user.cart);
+    
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
+// Fonction pour mettre à jour la quantité
+const updateProductQuantity = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  const { productId, color, newQuantity } = req.body;
+  
+  validateMongoDbId(_id);
+  validateMongoDbId(productId);
+
+  try {
+    const user = await User.findById(_id);
+    
+    if (!user.cart || !user.cart.products) {
+      return res.status(404).json({ message: "Cart is empty" });
+    }
+    
+    // Trouver le produit
+    const productIndex = user.cart.products.findIndex(
+      item => item.product.toString() === productId && item.color === color
+    );
+    
+    if (productIndex === -1) {
+      return res.status(404).json({ message: "Product not found in cart" });
+    }
+
+    // Fonction pour arrondir à 2 décimales
+    const roundToTwoDecimals = (num) => {
+      return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
+    };
+    
+    // Mettre à jour la quantité et recalculer le subtotal
+    user.cart.products[productIndex].count = Number(newQuantity);
+    user.cart.products[productIndex].subtotal = roundToTwoDecimals(
+      user.cart.products[productIndex].price * user.cart.products[productIndex].count
+    );
+
+    console.log(user.cart);
+    
+    
+    // Recalculer le total du panier
+    user.cart.cartTotal = user.cart.products.reduce((total, item) => {
+      return total + roundToTwoDecimals(item.subtotal || 0);
+    }, 0);
+    
+    user.cart.totalAfterDiscount = user.cart.cartTotal;
+    
+    await user.save();
+    
+    res.json(user.cart);
+    
+  } catch (error) {
     throw new Error(error);
   }
 });
@@ -962,4 +963,6 @@ module.exports = {
   updateOrderStatus,
   getAllOrders,
   getOrderByUserId,
+  removeProductFromCart,
+  updateProductQuantity
 };

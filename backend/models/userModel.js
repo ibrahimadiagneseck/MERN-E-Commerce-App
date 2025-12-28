@@ -50,6 +50,10 @@ var userSchema = new mongoose.Schema(
           count: Number,
           color: String,
           price: Number,
+          subtotal: { 
+            type: Number,
+            default: 0
+          }
         },
       ],
       cartTotal: {

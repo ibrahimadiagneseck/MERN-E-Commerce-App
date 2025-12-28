@@ -13,7 +13,6 @@ export const registerUser = createAsyncThunk(
       const response = await authService.register(userData);
       return response;
     } catch (error) {
-      // Correction: Utiliser le message d'erreur correct
       const message =
         error.response?.data?.message ||
         error.message ||
@@ -31,11 +30,10 @@ export const loginUser = createAsyncThunk(
       const response = await authService.login(userData);
       return response;
     } catch (error) {
-      // Correction: Changer "Registration failed" par "Login failed"
       const message =
         error.response?.data?.message ||
         error.message ||
-        "Login failed"; // ← Correction ici
+        "Login failed";
 
       return thunkAPI.rejectWithValue(message);
     }
@@ -61,13 +59,73 @@ export const addProdToCart = createAsyncThunk(
     } catch (error) {
       const message = error.response?.data?.message || error.message || "Failed to add to cart";
       
-      // Gérer les erreurs spécifiques
       if (error.response?.status === 401) {
         toast.error("Please login to add items to cart");
       } else {
         toast.error(message);
       }
       
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+export const getUserCart = createAsyncThunk(
+  "user/cart/get",
+  async (thunkAPI) => {
+    try {
+      return await authService.getCart();
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Failed to get cart";
+      
+      if (error.response?.status === 401) {
+        toast.error("Please login to view cart");
+      } else {
+        toast.error(message);
+      }
+      
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+// Nouveau thunk pour vider le panier
+export const emptyUserCart = createAsyncThunk(
+  "user/cart/empty",
+  async (thunkAPI) => {
+    try {
+      return await authService.emptyCart();
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Failed to empty cart";
+      toast.error(message);
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+// Nouveau thunk pour supprimer un produit du panier
+export const removeProductFromUserCart = createAsyncThunk(
+  "user/cart/remove",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.removeProductFromCart(data);
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Failed to remove product";
+      toast.error(message);
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
+// Nouveau thunk pour mettre à jour la quantité
+export const updateProductQuantityInCart = createAsyncThunk(
+  "user/cart/update-quantity",
+  async (data, thunkAPI) => {
+    try {
+      return await authService.updateProductQuantity(data);
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || "Failed to update quantity";
+      toast.error(message);
       return thunkAPI.rejectWithValue({ message });
     }
   }
@@ -86,6 +144,7 @@ const initialState = {
   isSuccess: false,
   isLoading: false,
   message: "",
+  cartProducts: null,
 };
 
 // ----------------------
@@ -104,7 +163,9 @@ export const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.isSuccess = false;
+      state.cartProducts = null;
       localStorage.removeItem("token");
+      localStorage.removeItem("customer");
       toast.info("Logged out successfully");
     },
   },
@@ -123,7 +184,6 @@ export const authSlice = createSlice({
         state.isSuccess = true;
         state.user = action.payload;
         state.message = "Registration successful";
-        // Afficher le toast ici, pas dans le composant
         toast.success("Account created successfully! Please login.");
       })
       .addCase(registerUser.rejected, (state, action) => {
@@ -131,7 +191,6 @@ export const authSlice = createSlice({
         state.isError = true;
         state.isSuccess = false;
         state.message = action.payload || "Registration failed";
-        // Toast d'erreur
         toast.error(state.message);
       })
 
@@ -149,12 +208,10 @@ export const authSlice = createSlice({
         state.user = action.payload;
         state.message = "Login successful";
         
-        // Stocker le token
         if (action.payload?.token) {
           localStorage.setItem("token", action.payload.token);
         }
         
-        // Toast de succès
         toast.success("Login successful!");
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -162,11 +219,10 @@ export const authSlice = createSlice({
         state.isError = true;
         state.isSuccess = false;
         state.message = action.payload || "Login failed";
-        // Toast d'erreur
         toast.error(state.message);
       })
 
-
+      // --- WISHLIST CASES ---
       .addCase(getUserProductWishlist.pending, (state) => {
         state.isLoading = true;
       })
@@ -183,6 +239,7 @@ export const authSlice = createSlice({
         state.message = action.error;
       })
 
+      // --- ADD TO CART CASES ---
       .addCase(addProdToCart.pending, (state) => {
         state.isLoading = true;
       })
@@ -191,11 +248,79 @@ export const authSlice = createSlice({
         state.isError = false;
         state.isSuccess = true;
         state.cartProduct = action.payload;
-        if (state.success) {
-          toast.success("Product Added to Cart");
-        }
+        toast.success("Product Added to Cart");
       })
       .addCase(addProdToCart.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.error;
+      })
+
+      // --- GET CART CASES ---
+      .addCase(getUserCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getUserCart.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.cartProducts = action.payload;
+      })
+      .addCase(getUserCart.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.error;
+      })
+
+      // --- EMPTY CART CASES ---
+      .addCase(emptyUserCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(emptyUserCart.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.cartProducts = action.payload;
+        toast.success("Cart emptied successfully");
+      })
+      .addCase(emptyUserCart.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.error;
+      })
+
+      // --- REMOVE PRODUCT FROM CART CASES ---
+      .addCase(removeProductFromUserCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(removeProductFromUserCart.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.cartProducts = action.payload;
+        toast.success("Product removed from cart");
+      })
+      .addCase(removeProductFromUserCart.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.error;
+      })
+
+      // --- UPDATE QUANTITY CASES ---
+      .addCase(updateProductQuantityInCart.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateProductQuantityInCart.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.cartProducts = action.payload;
+      })
+      .addCase(updateProductQuantityInCart.rejected, (state, action) => {
         state.isLoading = false;
         state.isError = true;
         state.isSuccess = false;

@@ -48,39 +48,35 @@ const SingleProduct = () => {
     const [quantityProd, setQuantity] = useState(1);
     
 
-    const uploadCart = () => {
-        if (!product) {
-            toast.error("Product not loaded");
-            return;
-        }
+    // Fonction pour ajouter au panier
+  const uploadCart = () => {
+    if (!product) {
+      toast.error("Product not loaded");
+      return;
+    }
 
-        if (colorProd === null) {
-            toast.error("Please Choose Color");
-            return;
-        }
+    if (colorProd === null) {
+      toast.error("Please Choose Color");
+      return;
+    }
 
-        if (quantityProd < 1) {
-            toast.error("Quantity must be at least 1");
-            return;
-        }
+    if (quantityProd < 1) {
+      toast.error("Quantity must be at least 1");
+      return;
+    }
 
-        // Créer l'objet cart conforme au backend
-        const cartData = {
-            cart: [
-                {
-                    _id: productId,
-                    count: Number(quantityProd),
-                    color: colorProd
-                    // price: colorProd
-                }
-            ]
-        };
-
-        console.log(cartData);
-        
-
-        dispatch(addProdToCart(cartData));
+    // Format des données CORRECT pour l'Option 2
+    const cartData = {
+      productId: productId,
+      color: colorProd,
+      quantity: Number(quantityProd)
     };
+
+    // console.log("Sending cart data:", cartData);
+    
+    dispatch(addProdToCart(cartData));
+    // toast.success("Product added to cart!");
+  };
 
     const getImageUrl = (item, index) => {
         if (!item?.images || !Array.isArray(item.images)) {
