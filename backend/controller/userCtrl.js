@@ -734,7 +734,7 @@ const updateProductQuantity = asyncHandler(async (req, res) => {
       user.cart.products[productIndex].price * user.cart.products[productIndex].count
     );
 
-    console.log(user.cart);
+    // console.log(user.cart);
     
     
     // Recalculer le total du panier

@@ -10,167 +10,234 @@ import { AiOutlineHeart } from "react-icons/ai";
 import Container from "../components-others/Container";
 import CustomInput from "../components-others/CustomInput";
 import StarRating from "../components-others/StarRating";
-// import { useLocation } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getProduct } from "../features/products/productSlice";
 import { toast } from "react-toastify";
 import watchImage from "../images/watch.jpg";
-import { addProdToCart } from "../features/user/userSlice";
+import { addProdToCart, getUserCart } from "../features/user/userSlice";
 
 const SingleProduct = () => {
 
-    // const location = useLocation();
+    const navigate = useNavigate();
+
+    // ============================================
+    // 1. RÉCUPÉRATION DES PARAMÈTRES DE L'URL
+    // ============================================
     const { id: productId } = useParams();
 
+    // ============================================
+    // 2. ÉTATS LOCAUX (useState)
+    // ============================================
+    const [colorProd, setColor] = useState(null);
+    const [quantityProd, setQuantity] = useState(1);
+    const [alreadyAdded, setAlreadyAdded] = useState(false);
+
+    // ============================================
+    // 3. RÉCUPÉRATION DES DONNÉES DEPUIS REDUX
+    // ============================================
     const productState = useSelector((state) => state?.product?.product);
+    const userCartState = useSelector((state) => state?.auth?.cartProducts);
 
-    const product = productState && typeof productState === 'object' ? productState : null;
+    // ============================================
+    // 4. NETTOYAGE ET FORMATAGE DES DONNÉES
+    // ============================================
+    const product = productState && typeof productState === "object" ? productState : null;
+    const availableQuantity = product?.quantity || 0;
+    console.log(availableQuantity);
+    
 
-    const ratingValue = product?.totalrating ?
-        (typeof product.totalrating === 'string' ?
-            parseFloat(product.totalrating) :
-            Number(product.totalrating))
+    const ratingValue = product?.totalrating
+        ? typeof product.totalrating === "string"
+            ? parseFloat(product.totalrating)
+            : Number(product.totalrating)
         : 0;
 
-
+    // ============================================
+    // 5. INITIALISATION DE DISPATCH
+    // ============================================
     const dispatch = useDispatch();
 
+    // ============================================
+    // 6. CHARGEMENT INITIAL DES DONNÉES (useEffect 1)
+    // ============================================
     useEffect(() => {
-        const getProductId = (id) => {
+        const getProductDetails = (id) => {
             dispatch(getProduct(id));
         };
 
-        getProductId(productId);
+        const getCart = () => {
+            dispatch(getUserCart());
+        };
+
+        getProductDetails(productId);
+        getCart();
     }, [dispatch, productId]);
 
-    const [colorProd, setColor] = useState(null);
-    const [quantityProd, setQuantity] = useState(1);
-    
+    // ============================================
+    // 7. VÉRIFICATION "PRODUIT DÉJÀ DANS LE PANIER" (useEffect 2 - CORRIGÉ)
+    // ============================================
+    useEffect(() => {
+        // CORRECTION: userCartState est un objet, pas un tableau directement
+        if (!userCartState || !productId) {
+            setAlreadyAdded(false);
+            return;
+        }
 
-    // Fonction pour ajouter au panier
-  const uploadCart = () => {
-    if (!product) {
-      toast.error("Product not loaded");
-      return;
-    }
+        // Accéder au tableau products à l'intérieur de userCartState
+        const cartProducts = userCartState?.products || [];
 
-    if (colorProd === null) {
-      toast.error("Please Choose Color");
-      return;
-    }
+        if (!Array.isArray(cartProducts)) {
+            setAlreadyAdded(false);
+            return;
+        }
 
-    if (quantityProd < 1) {
-      toast.error("Quantity must be at least 1");
-      return;
-    }
+        // Recherche du produit dans le panier
+        const productExists = cartProducts.some((cartItem) => {
+            // Vérifier si cartItem existe et a une propriété product
+            if (!cartItem || !cartItem.product) {
+                return false;
+            }
 
-    // Format des données CORRECT pour l'Option 2
-    const cartData = {
-      productId: productId,
-      color: colorProd,
-      quantity: Number(quantityProd)
+            // Comparer l'ID du produit dans le panier avec l'ID actuel
+            return cartItem.product._id === productId;
+        });
+
+        setAlreadyAdded(productExists);
+
+    }, [userCartState, productId]);
+
+    // ============================================
+    // 8. FONCTION : AJOUTER AU PANIER
+    // ============================================
+    const uploadCart = () => {
+        
+        if (!product) {
+            toast.error("Product not loaded");
+            return;
+        }
+
+        if (colorProd === null) {
+            toast.error("Please Choose Color");
+            return;
+        }
+
+        if (quantityProd < 1) {
+            toast.error("Quantity must be at least 1");
+            return;
+        }
+
+        // CORRECTION: Préparer les données selon la structure de votre API
+        const cartData = {
+            productId: productId,
+            color: colorProd,
+            price: product.price, // Inclure le prix
+            quantity: Number(quantityProd),
+            // Note: Votre API pourrait avoir besoin d'autres champs
+        };
+
+        dispatch(addProdToCart(cartData));
+        navigate('/cart');
     };
 
-    // console.log("Sending cart data:", cartData);
-    
-    dispatch(addProdToCart(cartData));
-    // toast.success("Product added to cart!");
-  };
-
+    // ============================================
+    // 9. FONCTION : RÉCUPÉRER L'URL D'UNE IMAGE
+    // ============================================
     const getImageUrl = (item, index) => {
         if (!item?.images || !Array.isArray(item.images)) {
-            // Retourner des images par défaut si pas d'images
-            return index === 0 ? watchImage : watchImage;
+            return watchImage;
         }
 
         if (item.images.length > index) {
-            // Si l'image a une propriété url
-            if (item.images[index]?.url) {
-                return item.images[index].url;
+            const image = item.images[index];
+
+            if (image?.url) {
+                return image.url;
             }
-            // Si l'image est une string directement
-            if (typeof item.images[index] === 'string') {
-                return item.images[index];
+
+            if (typeof image === "string") {
+                return image;
             }
         }
 
-        // Retourner des images par défaut
-        return index === 0 ? watchImage : watchImage;
+        return watchImage;
     };
 
-
+    // ============================================
+    // 10. CONFIGURATION DU ZOOM D'IMAGE
+    // ============================================
     const props = {
         width: 400,
         height: 600,
         zoomWidth: 600,
-        img: getImageUrl(product, 0) || "https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80"
+        img: getImageUrl(product, 0) || watchImage,
     };
 
-
-    const [orderedProduct] = useState(true); // Suppression de setOrderedProduct non utilisé
-
-    // Fonction pour sécuriser et éventuellement tronquer le contenu du blog
-    const renderContent = (content) => {
-        if (!content) return { __html: '' };
-        if (content.__html !== undefined) return content;
-        if (typeof content === 'string') {
-            const truncated = content.length > 500 ? content.slice(0, 500) + "..." : content;
-            return { __html: truncated };
-        }
-        return { __html: '' };
-    };
-
-
-    const copyToClipboard = async (text) => { // <-- ici, plus de ": string"
-        // Vérifie si le navigateur supporte l'API Clipboard et le contexte sécurisé
+    // ============================================
+    // 11. FONCTION : COPIER LE LIEN DANS LE PRESSE-PAPIERS
+    // ============================================
+    const copyToClipboard = async (text) => {
         if (navigator.clipboard && window.isSecureContext) {
             try {
-                await navigator.clipboard.writeText(text); // Copier dans le presse-papiers
-                toast.success("Product link copied to clipboard!"); // Toast succès
+                await navigator.clipboard.writeText(text);
+                toast.success("Product link copied to clipboard!");
             } catch (err) {
-                //   console.error("Clipboard API failed:", err);
-                fallbackCopy(text); // Fallback si l'API échoue
+                fallbackCopy(text);
             }
         } else {
-            fallbackCopy(text); // Fallback pour anciens navigateurs ou contextes non sécurisés
+            fallbackCopy(text);
         }
     };
 
-    // Fallback simple via prompt pour copier manuellement
-    const fallbackCopy = (text) => { // <-- aussi ici
+    const fallbackCopy = (text) => {
         try {
-            // prompt("Copy this link manually:", text);
-            toast.info("Use prompt to copy the link manually."); // Toast info
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            toast.info("Link copied to clipboard!");
         } catch (err) {
-            // console.error("Manual copy failed:", err);
-            toast.error("Failed to copy the link."); // Toast erreur
+            toast.error("Failed to copy the link.");
         }
     };
 
-
+    // ============================================
+    // 12. FONCTIONS POUR LES BOUTONS
+    // ============================================
     const handleAddToCompare = (e) => {
         e.preventDefault();
         console.log("Add to compare clicked");
-        // Ajouter ici la logique pour comparer le produit
     };
 
     const handleAddToWishlist = (e) => {
         e.preventDefault();
         console.log("Add to wishlist clicked");
-        // Ajouter ici la logique pour ajouter au wishlist
     };
 
     const handleWriteReview = (e) => {
         e.preventDefault();
         console.log("Write review clicked");
-        // Ajouter ici la logique pour écrire une review
     };
 
+    // Fonction pour gérer le clic sur le bouton principal
+    // const handleMainButtonClick = () => {
+    //     if (alreadyAdded) {
+    //         navigate('/cart');
+    //     } else {
+    //         uploadCart();
+    //     }
+    // };
+
+    // ============================================
+    // 13. RENDU DE L'INTERFACE (JSX)
+    // ============================================
     return (
         <>
             <Meta title={"Product Name"} />
             <BreadCrumb title="Product Name" />
+
             <Container class1="main-product-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <div className="col-6">
@@ -182,7 +249,7 @@ const SingleProduct = () => {
 
                         <div className="other-product-images d-flex flex-wrap gap-15">
                             {product?.images && product.images.length > 0 ? (
-                                product.images.map((_, index) => ( // utilise _ lorsque l’élément n’est pas utilisé.
+                                product.images.map((_, index) => (
                                     <div key={index}>
                                         <img
                                             src={getImageUrl(product, index)}
@@ -192,7 +259,6 @@ const SingleProduct = () => {
                                     </div>
                                 ))
                             ) : (
-                                // Fallback : aucune image → image par défaut
                                 <div>
                                     <img
                                         src={watchImage}
@@ -202,37 +268,17 @@ const SingleProduct = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* <div className="other-product-images d-flex flex-wrap gap-15">
-                            {[0, 1, 2, 3].map((index) => (
-                                <div key={index}>
-                                <img
-                                    src={getImageUrl(product, index)}
-                                    className="img-fluid"
-                                    alt={`product-${index}`}
-                                />
-                                </div>
-                            ))}
-                        </div> */}
                     </div>
+
                     <div className="col-6">
                         <div className="main-product-details">
                             <div className="border-bottom">
-                                <h3 className="title">
-                                    {product?.title}
-                                </h3>
+                                <h3 className="title">{product?.title}</h3>
                             </div>
+
                             <div className="border-bottom py-3">
                                 <p className="price">$ {product?.price}</p>
                                 <div className="d-flex align-items-center gap-10">
-                                    {/* <ReactStars
-                                        readonly
-                                        count={5}
-                                        size={24}
-                                        value={ratingValue}
-                                        edit={false}
-                                        activeColor="#ffd700"
-                                    /> */}
                                     <StarRating
                                         isHalf={true}
                                         emptyIcon={<i className="far fa-star"></i>}
@@ -247,99 +293,120 @@ const SingleProduct = () => {
                                 </div>
                                 <button
                                     className="review-btn border-0 bg-transparent text-decoration-underline p-0"
-                                    onClick={() => document.getElementById('review').scrollIntoView({ behavior: 'smooth' })}
+                                    onClick={() =>
+                                        document
+                                            .getElementById("review")
+                                            .scrollIntoView({ behavior: "smooth" })
+                                    }
                                 >
                                     Write a Review
                                 </button>
                             </div>
+
                             <div className="py-3">
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Type :</h3>
                                     <p className="product-data">Match</p>
                                 </div>
+
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Brand :</h3>
                                     <p className="product-data">{product?.brand}</p>
                                 </div>
+
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Category :</h3>
                                     <p className="product-data">{product?.category}</p>
                                 </div>
+
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Tags :</h3>
-                                    <p className="product-data">
-                                        {product?.tags?.join(", ")}
-                                    </p>
+                                    <p className="product-data">{product?.tags?.join(", ")}</p>
                                 </div>
+
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Availability :</h3>
-                                    <p className="product-data">In Stock</p>
+                                    <p className="product-data">
+                                        {product?.quantity > 0 ? "In Stock" : "Out of Stock"} ({availableQuantity}) 
+                                    </p>
                                 </div>
+
                                 <div className="d-flex gap-10 flex-column mt-2 mb-3">
                                     <h3 className="product-heading">Size :</h3>
                                     <div className="d-flex flex-wrap gap-15">
-                                        <span className="badge border border-1 bg-white text-dark border-secondary">S</span>
-                                        <span className="badge border border-1 bg-white text-dark border-secondary">M</span>
-                                        <span className="badge border border-1 bg-white text-dark border-secondary">XL</span>
-                                        <span className="badge border border-1 bg-white text-dark border-secondary">XXL</span>
+                                        <span className="badge border border-1 bg-white text-dark border-secondary">
+                                            S
+                                        </span>
+                                        <span className="badge border border-1 bg-white text-dark border-secondary">
+                                            M
+                                        </span>
+                                        <span className="badge border border-1 bg-white text-dark border-secondary">
+                                            XL
+                                        </span>
+                                        <span className="badge border border-1 bg-white text-dark border-secondary">
+                                            XXL
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="d-flex gap-10 flex-column mt-2 mb-3">
-                                    <h3 className="product-heading">Color :</h3>
-                                    <Color setColor={setColor} colorData={product?.color} />
-                                </div>
+
+                                {
+                                    alreadyAdded === false && <>
+                                        <div className="d-flex gap-10 flex-column mt-2 mb-3">
+                                            <h3 className="product-heading">Color :</h3>
+                                            <Color setColor={setColor} colorData={product?.color} />
+                                        </div>
+                                    </>
+                                }
+
                                 <div className="d-flex align-items-center gap-15 flex-row mt-2 mb-3">
-                                    <h3 className="product-heading">Quantity :</h3>
-                                    <CustomInput
-                                        type="number"
-                                        label="Quantity"
-                                        i_id="quantity"
-                                        i_class=""
-                                        name="quantity"
-                                        min={1}
-                                        max={product?.quantity || 10}
-                                        onChng={(e) => { setQuantity(e.target.value) }} // Ajoutez un gestionnaire vide
-                                        onBlr={() => { }}  // Ajoutez aussi onBlr pour être complet
-                                        val={quantityProd} // valeur par défaut
-                                        style={{ width: "70px" }}
-                                    />
-                                    <div className="d-flex align-items-center gap-30 ms-5">
-                                        {/* <button
-                                            className="button border-0"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#staticBackdrop"
-                                            type="button"
-                                            onClick={uploadCart}
-                                        >
-                                            Add to Cart
-                                        </button> */}
+                                    {
+                                        alreadyAdded === false && <>
 
-                                        {/* Avec paramètres, on DOIT utiliser la version avec fonction fléchée */}
-                                        {/* <button className="button border-0" type="button"
-                                            onClick={() => uploadCart(productId, quantityProd)}>
-                                            Add to Cart
-                                        </button> */}
+                                            <h3 className="product-heading">Quantity :</h3>
+                                            <CustomInput
+                                                type="number"
+                                                label="Quantity"
+                                                i_id="quantity"
+                                                i_class=""
+                                                name="quantity"
+                                                min={1}
+                                                max={product?.quantity || 10}
+                                                onChng={(e) => {
+                                                    setQuantity(e.target.value);
+                                                }}
+                                                onBlr={() => { }}
+                                                val={quantityProd}
+                                                style={{ width: "70px" }}
+                                            />
+                                        </>
+                                    }
+                                    <div className={alreadyAdded ? "ms-0" : "d-flex align-items-center gap-30 ms-5"}>
+                                        
+                                        {alreadyAdded ? (
+                                            // Bouton "Go To Cart" - toujours actif
+                                            <button
+                                                className="button border-0"
+                                                type="button"
+                                                onClick={() => navigate('/cart')}
+                                            >
+                                                Go To Cart
+                                            </button>
+                                        ) : (
+                                            // Bouton "Add to Cart" - conditions à vérifier
+                                            // disabled={!product || !colorProd || quantityProd < 1}
+                                            <button
+                                                className="button border-0"
+                                                type="button"
+                                                onClick={uploadCart}
+                                            >
+                                                Add to Cart
+                                            </button>
+                                        )}
 
-                                        {/* <button 
-                                            className="button border-0" 
-                                            type="button" 
-                                            onClick={uploadCart}
-                                            disabled={!product || !colorProd}
-                                        >
-                                            Add to Cart
-                                        </button> */}
-
-                                        <button 
-                                            className="button border-0" 
-                                            type="button" 
-                                            onClick={uploadCart}
-                                        >
-                                            Add to Cart
-                                        </button>
-
-                                        <button className="button signup">Buy It Now</button>
+                                        {/* <button className="button signup">Buy It Now</button> */}
                                     </div>
                                 </div>
+
                                 <div className="d-flex align-items-center gap-15">
                                     <div>
                                         <button
@@ -358,13 +425,16 @@ const SingleProduct = () => {
                                         </button>
                                     </div>
                                 </div>
+
                                 <div className="d-flex gap-10 flex-column my-3">
                                     <h3 className="product-heading">Shipping & Returns :</h3>
                                     <p className="product-data">
                                         Free shipping and returns available on all orders! <br />
-                                        We ship all US domestic orders within <b>5-10 business days!</b>
+                                        We ship all US domestic orders within{" "}
+                                        <b>5-10 business days!</b>
                                     </p>
                                 </div>
+
                                 <div className="d-flex gap-10 align-items-center my-3">
                                     <h3 className="product-heading">Product Link:</h3>
                                     <button
@@ -375,30 +445,29 @@ const SingleProduct = () => {
                                     >
                                         Copy Product Link
                                     </button>
-                                    {/* <button 
-                                            className="border-0 bg-transparent text-decoration-underline p-0"
-                                            onClick={() => {
-                                                copyToClipboard("https://image01-eu.oneplus.net/media/202502/11/b3c115c086af4684e803827886a183bb.png?x-amz-process=image/format,webp/quality,Q_80");
-                                            }}
-                                        >
-                                            Copy Product Link
-                                        </button> */}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </Container>
+
             <Container class1="description-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <div className="col-12">
                         <h4>Description</h4>
                         <div className="bg-white p-3">
-                            <p className="desc" dangerouslySetInnerHTML={renderContent(product?.description)}></p>
+                            <p
+                                className="desc"
+                                dangerouslySetInnerHTML={{
+                                    __html: product?.description || "",
+                                }}
+                            ></p>
                         </div>
                     </div>
                 </div>
             </Container>
+
             <Container class1="reviews-wrapper home-wrapper-2">
                 <div className="row">
                     <div className="col-12">
@@ -418,17 +487,16 @@ const SingleProduct = () => {
                                         <p className="mb-0">Based on 2 Reviews</p>
                                     </div>
                                 </div>
-                                {orderedProduct && (
-                                    <div>
-                                        <button
-                                            className="text-dark text-decoration-underline border-0 bg-transparent p-0"
-                                            onClick={handleWriteReview}
-                                        >
-                                            Write a Review
-                                        </button>
-                                    </div>
-                                )}
+                                <div>
+                                    <button
+                                        className="text-dark text-decoration-underline border-0 bg-transparent p-0"
+                                        onClick={handleWriteReview}
+                                    >
+                                        Write a Review
+                                    </button>
+                                </div>
                             </div>
+
                             <div className="review-form py-4">
                                 <h4>Write a Reviews</h4>
                                 <form className="d-flex flex-column gap-15">
@@ -454,6 +522,7 @@ const SingleProduct = () => {
                                     </div>
                                 </form>
                             </div>
+
                             <div className="reviews mt-3">
                                 <div className="review">
                                     <div className="d-flex gap-10 align-items-center">
@@ -468,9 +537,9 @@ const SingleProduct = () => {
                                     </div>
                                     <p className="mt-3">
                                         Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-                                        Tenetur nisi similique illum aut perferendis voluptas, quisquam
-                                        obcaecati qui nobis officia. Voluptatibus in harum deleniti
-                                        labore maxime officia esse eos? Repellat?
+                                        Tenetur nisi similique illum aut perferendis voluptas,
+                                        quisquam obcaecati qui nobis officia. Voluptatibus in harum
+                                        deleniti labore maxime officia esse eos? Repellat?
                                     </p>
                                 </div>
                             </div>
@@ -478,6 +547,7 @@ const SingleProduct = () => {
                     </div>
                 </div>
             </Container>
+
             <Container class1="popular-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <ProductCard />

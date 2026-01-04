@@ -58,6 +58,7 @@ const removeProductFromCart = async (data) => {
   }
 };
 
+
 // Nouvelle fonction pour mettre à jour la quantité
 const updateProductQuantity = async (data) => {
   const response = await axios.put(`${base_url}/user/update-quantity-cart`, data, config);
