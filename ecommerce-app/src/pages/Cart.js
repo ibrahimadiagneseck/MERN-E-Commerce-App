@@ -264,12 +264,12 @@ const Cart = () => {
                                     )}
                                     <p className="text-muted small">Taxes and shipping calculated at checkout</p>
                                     <div className="d-flex gap-3 mt-2">
-                                        <button 
+                                        {/* <button 
                                             className="btn btn-outline-danger"
                                             onClick={handleEmptyCart}
                                         >
                                             Empty Cart
-                                        </button>
+                                        </button> */}
                                         <Link to="/checkout" className="button">
                                             Proceed to Checkout
                                         </Link>

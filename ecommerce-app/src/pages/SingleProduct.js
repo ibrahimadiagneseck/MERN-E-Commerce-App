@@ -18,7 +18,6 @@ import watchImage from "../images/watch.jpg";
 import { addProdToCart, getUserCart } from "../features/user/userSlice";
 
 const SingleProduct = () => {
-
     const navigate = useNavigate();
 
     // ============================================
@@ -44,9 +43,8 @@ const SingleProduct = () => {
     // ============================================
     const product = productState && typeof productState === "object" ? productState : null;
     const availableQuantity = product?.quantity || 0;
-    console.log(availableQuantity);
     
-
+    // Calcul de la note moyenne du produit
     const ratingValue = product?.totalrating
         ? typeof product.totalrating === "string"
             ? parseFloat(product.totalrating)
@@ -75,10 +73,9 @@ const SingleProduct = () => {
     }, [dispatch, productId]);
 
     // ============================================
-    // 7. VÉRIFICATION "PRODUIT DÉJÀ DANS LE PANIER" (useEffect 2 - CORRIGÉ)
+    // 7. VÉRIFICATION "PRODUIT DÉJÀ DANS LE PANIER" (useEffect 2)
     // ============================================
     useEffect(() => {
-        // CORRECTION: userCartState est un objet, pas un tableau directement
         if (!userCartState || !productId) {
             setAlreadyAdded(false);
             return;
@@ -94,7 +91,6 @@ const SingleProduct = () => {
 
         // Recherche du produit dans le panier
         const productExists = cartProducts.some((cartItem) => {
-            // Vérifier si cartItem existe et a une propriété product
             if (!cartItem || !cartItem.product) {
                 return false;
             }
@@ -104,39 +100,54 @@ const SingleProduct = () => {
         });
 
         setAlreadyAdded(productExists);
-
     }, [userCartState, productId]);
 
     // ============================================
     // 8. FONCTION : AJOUTER AU PANIER
     // ============================================
     const uploadCart = () => {
-        
+        // Validation 1: Vérifier si le produit est chargé
         if (!product) {
             toast.error("Product not loaded");
             return;
         }
 
+        // Validation 2: Vérifier si le produit est en stock
+        if (availableQuantity <= 0) {
+            toast.error("Product is out of stock");
+            return;
+        }
+
+        // Validation 3: Vérifier si une couleur est sélectionnée
         if (colorProd === null) {
             toast.error("Please Choose Color");
             return;
         }
 
+        // Validation 4: Vérifier si la quantité est valide
         if (quantityProd < 1) {
             toast.error("Quantity must be at least 1");
             return;
         }
 
-        // CORRECTION: Préparer les données selon la structure de votre API
+        // Validation 5: Vérifier si la quantité demandée est disponible
+        if (quantityProd > availableQuantity) {
+            toast.error(`Only ${availableQuantity} units available`);
+            return;
+        }
+
+        // Préparation des données pour l'ajout au panier
         const cartData = {
             productId: productId,
             color: colorProd,
-            price: product.price, // Inclure le prix
+            price: product.price,
             quantity: Number(quantityProd),
-            // Note: Votre API pourrait avoir besoin d'autres champs
         };
 
+        // Dispatch de l'action pour ajouter au panier
         dispatch(addProdToCart(cartData));
+        
+        // Redirection vers la page du panier
         navigate('/cart');
     };
 
@@ -144,22 +155,27 @@ const SingleProduct = () => {
     // 9. FONCTION : RÉCUPÉRER L'URL D'UNE IMAGE
     // ============================================
     const getImageUrl = (item, index) => {
+        // Si l'item n'a pas d'images ou que ce n'est pas un tableau, retourner l'image par défaut
         if (!item?.images || !Array.isArray(item.images)) {
             return watchImage;
         }
 
+        // Si l'index existe dans le tableau d'images
         if (item.images.length > index) {
             const image = item.images[index];
 
+            // Si l'image a une propriété url
             if (image?.url) {
                 return image.url;
             }
 
+            // Si l'image est une chaîne de caractères
             if (typeof image === "string") {
                 return image;
             }
         }
 
+        // Image par défaut si aucun cas n'est satisfait
         return watchImage;
     };
 
@@ -177,6 +193,7 @@ const SingleProduct = () => {
     // 11. FONCTION : COPIER LE LIEN DANS LE PRESSE-PAPIERS
     // ============================================
     const copyToClipboard = async (text) => {
+        // Méthode moderne avec l'API Clipboard
         if (navigator.clipboard && window.isSecureContext) {
             try {
                 await navigator.clipboard.writeText(text);
@@ -185,6 +202,7 @@ const SingleProduct = () => {
                 fallbackCopy(text);
             }
         } else {
+            // Méthode de secours pour les anciens navigateurs
             fallbackCopy(text);
         }
     };
@@ -204,51 +222,53 @@ const SingleProduct = () => {
     };
 
     // ============================================
-    // 12. FONCTIONS POUR LES BOUTONS
+    // 12. FONCTIONS POUR LES BOUTONS SECONDAIRES
     // ============================================
     const handleAddToCompare = (e) => {
         e.preventDefault();
         console.log("Add to compare clicked");
+        // TODO: Implémenter la logique d'ajout à la comparaison
     };
 
     const handleAddToWishlist = (e) => {
         e.preventDefault();
         console.log("Add to wishlist clicked");
+        // TODO: Implémenter la logique d'ajout à la liste de souhaits
     };
 
     const handleWriteReview = (e) => {
         e.preventDefault();
         console.log("Write review clicked");
+        // TODO: Implémenter la logique d'écriture de commentaire
     };
-
-    // Fonction pour gérer le clic sur le bouton principal
-    // const handleMainButtonClick = () => {
-    //     if (alreadyAdded) {
-    //         navigate('/cart');
-    //     } else {
-    //         uploadCart();
-    //     }
-    // };
 
     // ============================================
     // 13. RENDU DE L'INTERFACE (JSX)
     // ============================================
     return (
         <>
+            {/* Meta tags pour le SEO */}
             <Meta title={"Product Name"} />
+            
+            {/* Fil d'Ariane pour la navigation */}
             <BreadCrumb title="Product Name" />
 
+            {/* Section principale du produit */}
             <Container class1="main-product-wrapper py-5 home-wrapper-2">
                 <div className="row">
+                    {/* Colonne gauche : Images du produit */}
                     <div className="col-6">
                         <div className="main-product-image">
                             <div>
+                                {/* Zoom sur l'image principale */}
                                 <ReactImageZoom {...props} />
                             </div>
                         </div>
 
+                        {/* Galerie d'images secondaires */}
                         <div className="other-product-images d-flex flex-wrap gap-15">
                             {product?.images && product.images.length > 0 ? (
+                                // Affichage des images du produit
                                 product.images.map((_, index) => (
                                     <div key={index}>
                                         <img
@@ -259,6 +279,7 @@ const SingleProduct = () => {
                                     </div>
                                 ))
                             ) : (
+                                // Image par défaut si aucune image disponible
                                 <div>
                                     <img
                                         src={watchImage}
@@ -270,15 +291,19 @@ const SingleProduct = () => {
                         </div>
                     </div>
 
+                    {/* Colonne droite : Détails du produit */}
                     <div className="col-6">
                         <div className="main-product-details">
+                            {/* Titre du produit */}
                             <div className="border-bottom">
                                 <h3 className="title">{product?.title}</h3>
                             </div>
 
+                            {/* Prix et évaluations */}
                             <div className="border-bottom py-3">
                                 <p className="price">$ {product?.price}</p>
                                 <div className="d-flex align-items-center gap-10">
+                                    {/* Composant d'étoiles personnalisé */}
                                     <StarRating
                                         isHalf={true}
                                         emptyIcon={<i className="far fa-star"></i>}
@@ -291,6 +316,7 @@ const SingleProduct = () => {
                                     />
                                     <p className="mb-0 t-review">( 2 Reviews )</p>
                                 </div>
+                                {/* Bouton pour écrire un avis */}
                                 <button
                                     className="review-btn border-0 bg-transparent text-decoration-underline p-0"
                                     onClick={() =>
@@ -303,34 +329,41 @@ const SingleProduct = () => {
                                 </button>
                             </div>
 
+                            {/* Informations détaillées du produit */}
                             <div className="py-3">
+                                {/* Type */}
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Type :</h3>
                                     <p className="product-data">Match</p>
                                 </div>
 
+                                {/* Marque */}
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Brand :</h3>
                                     <p className="product-data">{product?.brand}</p>
                                 </div>
 
+                                {/* Catégorie */}
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Category :</h3>
                                     <p className="product-data">{product?.category}</p>
                                 </div>
 
+                                {/* Tags */}
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Tags :</h3>
                                     <p className="product-data">{product?.tags?.join(", ")}</p>
                                 </div>
 
+                                {/* Disponibilité */}
                                 <div className="d-flex gap-10 align-items-center my-2">
                                     <h3 className="product-heading">Availability :</h3>
                                     <p className="product-data">
-                                        {product?.quantity > 0 ? "In Stock" : "Out of Stock"} ({availableQuantity}) 
+                                        {product?.quantity > 0 ? "In Stock" : "Out of Stock"} ({availableQuantity})
                                     </p>
                                 </div>
 
+                                {/* Tailles */}
                                 <div className="d-flex gap-10 flex-column mt-2 mb-3">
                                     <h3 className="product-heading">Size :</h3>
                                     <div className="d-flex flex-wrap gap-15">
@@ -349,19 +382,21 @@ const SingleProduct = () => {
                                     </div>
                                 </div>
 
-                                {
-                                    alreadyAdded === false && <>
+                                {/* Sélection de couleur (uniquement si non déjà dans le panier) */}
+                                {alreadyAdded === false && (
+                                    <>
                                         <div className="d-flex gap-10 flex-column mt-2 mb-3">
                                             <h3 className="product-heading">Color :</h3>
                                             <Color setColor={setColor} colorData={product?.color} />
                                         </div>
                                     </>
-                                }
+                                )}
 
+                                {/* Contrôles d'achat */}
                                 <div className="d-flex align-items-center gap-15 flex-row mt-2 mb-3">
-                                    {
-                                        alreadyAdded === false && <>
-
+                                    {alreadyAdded === false && (
+                                        <>
+                                            {/* Sélection de quantité */}
                                             <h3 className="product-heading">Quantity :</h3>
                                             <CustomInput
                                                 type="number"
@@ -370,18 +405,24 @@ const SingleProduct = () => {
                                                 i_class=""
                                                 name="quantity"
                                                 min={1}
-                                                max={product?.quantity || 10}
+                                                max={availableQuantity}
                                                 onChng={(e) => {
-                                                    setQuantity(e.target.value);
+                                                    const value = Math.min(
+                                                        Math.max(1, parseInt(e.target.value) || 1),
+                                                        availableQuantity
+                                                    );
+                                                    setQuantity(value);
                                                 }}
                                                 onBlr={() => { }}
                                                 val={quantityProd}
                                                 style={{ width: "70px" }}
+                                                disabled={availableQuantity <= 0}
                                             />
                                         </>
-                                    }
+                                    )}
+
+                                    {/* Bouton principal (Add to Cart / Go To Cart) */}
                                     <div className={alreadyAdded ? "ms-0" : "d-flex align-items-center gap-30 ms-5"}>
-                                        
                                         {alreadyAdded ? (
                                             // Bouton "Go To Cart" - toujours actif
                                             <button
@@ -392,21 +433,39 @@ const SingleProduct = () => {
                                                 Go To Cart
                                             </button>
                                         ) : (
-                                            // Bouton "Add to Cart" - conditions à vérifier
-                                            // disabled={!product || !colorProd || quantityProd < 1}
+                                            // Bouton "Add to Cart" avec conditions de désactivation
+                                            // disabled={!product || !colorProd || quantityProd < 1 || availableQuantity <= 0}
                                             <button
                                                 className="button border-0"
                                                 type="button"
                                                 onClick={uploadCart}
+                                                style={{
+                                                    opacity: (!product || !colorProd || quantityProd < 1 || availableQuantity <= 0) ? 0.5 : 1,
+                                                    cursor: (!product || !colorProd || quantityProd < 1 || availableQuantity <= 0) ? 'not-allowed' : 'pointer'
+                                                }}
                                             >
                                                 Add to Cart
                                             </button>
                                         )}
-
-                                        {/* <button className="button signup">Buy It Now</button> */}
                                     </div>
                                 </div>
 
+                                {/* Informations sur la disponibilité */}
+                                {availableQuantity <= 0 && alreadyAdded === false && (
+                                    <p className="text-danger small mt-1 mb-3">
+                                        <i className="fas fa-exclamation-circle me-2"></i>
+                                        Product out of stock
+                                    </p>
+                                )}
+
+                                {availableQuantity > 0 && alreadyAdded === false && (
+                                    <p className="text-success small mt-1 mb-3">
+                                        <i className="fas fa-check-circle me-2"></i>
+                                        {availableQuantity} units available
+                                    </p>
+                                )}
+
+                                {/* Boutons secondaires (comparaison et liste de souhaits) */}
                                 <div className="d-flex align-items-center gap-15">
                                     <div>
                                         <button
@@ -426,6 +485,7 @@ const SingleProduct = () => {
                                     </div>
                                 </div>
 
+                                {/* Informations de livraison */}
                                 <div className="d-flex gap-10 flex-column my-3">
                                     <h3 className="product-heading">Shipping & Returns :</h3>
                                     <p className="product-data">
@@ -435,6 +495,7 @@ const SingleProduct = () => {
                                     </p>
                                 </div>
 
+                                {/* Copier le lien du produit */}
                                 <div className="d-flex gap-10 align-items-center my-3">
                                     <h3 className="product-heading">Product Link:</h3>
                                     <button
@@ -452,11 +513,13 @@ const SingleProduct = () => {
                 </div>
             </Container>
 
+            {/* Section description du produit */}
             <Container class1="description-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <div className="col-12">
                         <h4>Description</h4>
                         <div className="bg-white p-3">
+                            {/* Utilisation de dangerouslySetInnerHTML pour afficher le HTML */}
                             <p
                                 className="desc"
                                 dangerouslySetInnerHTML={{
@@ -468,11 +531,13 @@ const SingleProduct = () => {
                 </div>
             </Container>
 
+            {/* Section des avis */}
             <Container class1="reviews-wrapper home-wrapper-2">
                 <div className="row">
                     <div className="col-12">
                         <h3 id="review">Reviews</h3>
                         <div className="review-inner-wrapper">
+                            {/* En-tête des avis */}
                             <div className="review-head d-flex justify-content-between align-items-end">
                                 <div>
                                     <h4 className="mb-2">Customer Reviews</h4>
@@ -497,6 +562,7 @@ const SingleProduct = () => {
                                 </div>
                             </div>
 
+                            {/* Formulaire d'avis */}
                             <div className="review-form py-4">
                                 <h4>Write a Reviews</h4>
                                 <form className="d-flex flex-column gap-15">
@@ -523,6 +589,7 @@ const SingleProduct = () => {
                                 </form>
                             </div>
 
+                            {/* Liste des avis existants */}
                             <div className="reviews mt-3">
                                 <div className="review">
                                     <div className="d-flex gap-10 align-items-center">
@@ -548,6 +615,7 @@ const SingleProduct = () => {
                 </div>
             </Container>
 
+            {/* Section produits populaires */}
             <Container class1="popular-wrapper py-5 home-wrapper-2">
                 <div className="row">
                     <ProductCard />
