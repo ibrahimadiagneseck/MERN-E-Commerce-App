@@ -76,6 +76,8 @@ export const getUserCart = createAsyncThunk(
     try {
       return await authService.getCart();
     } catch (error) {
+      console.log(error);
+      
       const message = error.response?.data?.message || error.message || "Failed to get cart";
       
       if (error.response?.status === 401) {

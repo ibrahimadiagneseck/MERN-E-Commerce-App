@@ -1,78 +1,108 @@
 const express = require("express");
 
 const {
+  // Auth
   createUser,
   loginUserCtrl,
+  loginAdmin,
+  handleRefreshToken,
+  logout,
+  forgotPasswordToken,
+  resetPassword,
+  updatePassword,
+
+  // User
   getallUser,
   getaUser,
   deleteaUser,
   updatedUser,
   blockUser,
   unblockUser,
-  handleRefreshToken,
-  logout,
-  updatePassword,
-  forgotPasswordToken,
-  resetPassword,
-  loginAdmin,
   getWishlist,
   saveAddress,
+
+  // Cart
   userCart,
   getUserCart,
   emptyCart,
   removeProductFromCart,
   updateProductQuantity,
-  applyCoupon,
+
+  // Orders
   createOrder,
   getOrders,
-  updateOrderStatus,
   getAllOrders,
+  getOrderByUserId,
+  getOrderById,
+  updateOrderStatus,
 } = require("../controller/userCtrl");
 
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
+
 const router = express.Router();
 
-// Authentication routes
+/* ===========================
+   AUTHENTICATION
+=========================== */
 router.post("/register", createUser);
-router.post("/forgot-password-token", forgotPasswordToken);
-router.put("/reset-password/:token", resetPassword);
-router.put("/password", authMiddleware, updatePassword);
 router.post("/login", loginUserCtrl);
 router.post("/admin-login", loginAdmin);
 
-// Cart routes
-router.post("/cart", authMiddleware, userCart); // Ajouter au panier
-router.get("/cart", authMiddleware, getUserCart); // Récupérer le panier
-router.delete("/empty-cart", authMiddleware, emptyCart); // Vider le panier
-router.delete("/remove-product-cart", authMiddleware, removeProductFromCart); // Supprimer un produit
-router.put("/update-quantity-cart", authMiddleware, updateProductQuantity); // Mettre à jour la quantité
-
-// Coupon and order routes
-router.post("/cart/applycoupon", authMiddleware, applyCoupon);
-router.post("/cart/cash-order", authMiddleware, createOrder);
-
-// User management routes
-router.get("/all-users", getallUser);
-router.get("/get-orders", authMiddleware, getOrders);
-router.get("/getallorders", authMiddleware, isAdmin, getAllOrders);
-router.post("/getorderbyuser/:id", authMiddleware, isAdmin, getAllOrders);
-
-// Other routes
 router.get("/refresh", handleRefreshToken);
 router.get("/logout", logout);
-router.get("/wishlist", authMiddleware, getWishlist);
-router.get("/:id", authMiddleware, isAdmin, getaUser);
-router.delete("/:id", deleteaUser);
 
+router.post("/forgot-password-token", forgotPasswordToken);
+router.put("/reset-password/:token", resetPassword);
+router.put("/password", authMiddleware, updatePassword);
+
+/* ===========================
+   USER MANAGEMENT
+=========================== */
+router.get("/all-users", authMiddleware, isAdmin, getallUser);
+router.get("/wishlist", authMiddleware, getWishlist);
+router.put("/edit-user", authMiddleware, updatedUser);
+router.put("/save-address", authMiddleware, saveAddress);
+
+router.get("/:id", authMiddleware, isAdmin, getaUser);
+router.delete("/:id", authMiddleware, isAdmin, deleteaUser);
+
+router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
+router.put("/unblock-user/:id", authMiddleware, isAdmin, unblockUser);
+
+/* ===========================
+   CART
+=========================== */
+router.post("/cart", authMiddleware, userCart);
+router.get("/cart", authMiddleware, getUserCart);
+router.delete("/empty-cart", authMiddleware, emptyCart);
+router.delete("/remove-product-cart", authMiddleware, removeProductFromCart);
+router.put("/update-quantity-cart", authMiddleware, updateProductQuantity);
+
+/* ===========================
+   ORDERS (USER)
+=========================== */
+router.post("/order/create", authMiddleware, createOrder);
+router.get("/orders/my-orders", authMiddleware, getOrders);
+router.get("/order/:orderId", authMiddleware, getOrderById);
+
+/* ===========================
+   ORDERS (ADMIN)
+=========================== */
+router.get("/orders/all", authMiddleware, isAdmin, getAllOrders);
+router.get(
+  "/orders/user/:userId",
+  authMiddleware,
+  isAdmin,
+  getOrderByUserId
+);
 router.put(
-  "/order/update-order/:id",
+  "/order/status/:orderId",
   authMiddleware,
   isAdmin,
   updateOrderStatus
 );
-router.put("/edit-user", authMiddleware, updatedUser);
-router.put("/save-address", authMiddleware, saveAddress);
-router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
-router.put("/unblock-user/:id", authMiddleware, isAdmin, unblockUser);
+
+
 
 module.exports = router;
+

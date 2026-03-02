@@ -754,188 +754,573 @@ const updateProductQuantity = asyncHandler(async (req, res) => {
 });
 
 
-const applyCoupon = asyncHandler(async (req, res) => {
 
-  const { coupon } = req.body;
-  const { _id } = req.user;
-  
-  validateMongoDbId(_id);
-
-  // Cherche le coupon correspondant au nom donné dans la base de données
-  const validCoupon = await Coupon.findOne({ name: coupon });
-
-  // Si le coupon n'existe pas, génère une erreur pour informer l'utilisateur que le coupon est invalide
-  if (validCoupon === null) {
-    throw new Error("Invalid Coupon");
-  }
-
-  // Récupère l'utilisateur correspondant à l'ID
-  const user = await User.findOne({ _id });
-
-  // Récupère le total actuel du panier de l'utilisateur en recherchant un panier associé à cet utilisateur
-  let { cartTotal } = await Cart.findOne({
-    orderby: user._id,
-  }).populate("products.product"); // Charge également les détails des produits du panier
-
-  // Calcule le total après application de la remise du coupon
-  // La remise est calculée en fonction du pourcentage `discount` contenu dans le coupon
-  let totalAfterDiscount = (
-    cartTotal -
-    (cartTotal * validCoupon.discount) / 100
-  ).toFixed(2); // Utilise toFixed pour formater le résultat à deux décimales
-
-  // Met à jour le panier de l'utilisateur avec le nouveau total après remise
-  await Cart.findOneAndUpdate(
-    { orderby: user._id },
-    { totalAfterDiscount },
-    { new: true } // Retourne le document mis à jour
-  );
-
-  // Envoie le total après remise en réponse à la requête
-  res.json(totalAfterDiscount);
-});
-
-
+/**
+ * 🛒 CRÉER UNE COMMANDE À PARTIR DU PANIER UTILISATEUR
+ * POST: /api/order/create
+ */
 const createOrder = asyncHandler(async (req, res) => {
-
-  // Récupère le type de paiement "Cash on Delivery" (COD) et si un coupon est appliqué
-  const { COD, couponApplied } = req.body;
-
-  const { _id } = req.user;
-
-  validateMongoDbId(_id);
-
   try {
+    const {
+      shippingAddress,
+      paymentMethod = "cash_on_delivery",
+      customerNotes = "",
+    } = req.body;
 
-    // Si le paiement par COD n'est pas fourni, génère une erreur
-    if (!COD) throw new Error("Create cash order failed");
+    const { _id: userId } = req.user;
+    validateMongoDbId(userId);
 
-    // Recherche l'utilisateur dans la base de données avec son ID
-    const user = await User.findById(_id);
+    // 👤 Récupérer l'utilisateur avec son panier
+    const user = await User.findById(userId)
+      .populate({
+        path: "cart.products.product",
+        select: "title price quantity images",
+      });
 
-    // Récupère le panier de l'utilisateur en fonction de l'ID utilisateur
-    let userCart = await Cart.findOne({ orderby: user._id });
-
-    // Initialise le montant final de la commande
-    let finalAmout = 0;
-
-    // Détermine le montant final en tenant compte de la réduction si un coupon est appliqué
-    if (couponApplied && userCart.totalAfterDiscount) {
-      finalAmout = userCart.totalAfterDiscount;
-    } else {
-      finalAmout = userCart.cartTotal;
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    // Crée un nouvel objet de commande avec les détails du panier
-    let newOrder = await new Order({
-      products: userCart.products, // Les produits commandés
-      paymentIntent: {
-        id: uniqid(),               // Génère un identifiant unique pour la commande
-        method: "COD",              // Méthode de paiement (Cash on Delivery)
-        amount: finalAmout,         // Montant final de la commande
-        status: "Cash on Delivery", // Statut du paiement
-        created: Date.now(),        // Date de création
-        currency: "usd",            // Devise de paiement
-      },
-      orderby: user._id,            // Identifiant de l'utilisateur ayant passé la commande
-      orderStatus: "Cash on Delivery", // Statut de la commande
-    }).save();
+    // 🛒 Vérifier si le panier est vide
+    if (!user.cart || user.cart.products.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Your cart is empty",
+      });
+    }
 
-    // Met à jour les stocks et les ventes pour chaque produit dans le panier
-    let update = userCart.products.map((item) => {
-      return {
+    // 📊 Préparer les produits pour la commande
+    const orderProducts = [];
+    let subtotal = 0;
+    const stockUpdates = [];
+
+    for (const cartItem of user.cart.products) {
+      const product = cartItem.product;
+      
+      // 🔍 Vérifier la disponibilité du stock
+      if (product.quantity < cartItem.count) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${product.title}. Available: ${product.quantity}`,
+          productId: product._id,
+        });
+      }
+
+      // 💰 Calculer le sous-total pour cet article
+      const itemSubtotal = cartItem.price * cartItem.count;
+      subtotal += itemSubtotal;
+
+      // 📦 Préparer l'article pour la commande
+      orderProducts.push({
+        product: product._id,
+        name: product.title,
+        count: cartItem.count,
+        color: cartItem.color,
+        price: cartItem.price,
+        subtotal: itemSubtotal,
+      });
+
+      // 📝 Préparer la mise à jour du stock
+      stockUpdates.push({
         updateOne: {
-          filter: { _id: item.product._id }, // Trouve le produit correspondant
-          update: { 
-            $inc: { 
-              quantity: -item.count,  // Diminue la quantité en stock en fonction de la quantité commandée
-              sold: +item.count       // Augmente le nombre d'unités vendues
-            }
+          filter: { _id: product._id },
+          update: {
+            $inc: {
+              quantity: -cartItem.count,
+              sold: cartItem.count,
+            },
           },
         },
-      };
+      });
+    }
+
+    // 🚚 Calculer les frais de livraison
+    const shippingFee = user.cart.couponApplied?.freeShipping ? 0 : 10; // Frais fixes de 10$
+
+    // 📊 Calculer les taxes (20% par défaut)
+    const taxRate = 0.20;
+    const taxAmount = subtotal * taxRate;
+
+    // 💰 Appliquer la réduction du coupon si existante
+    let discountAmount = user.cart.couponApplied?.discountAmount || 0;
+    let couponApplied = null;
+
+    if (user.cart.couponApplied) {
+      const coupon = await Coupon.findById(user.cart.couponApplied.couponId);
+      if (coupon) {
+        couponApplied = {
+          coupon: coupon._id,
+          code: coupon.code || coupon.name,
+          discountType: coupon.discountType,
+          discountValue: coupon.discount,
+        };
+
+        // 📈 Incrémenter l'utilisation du coupon
+        coupon.usageCount += 1;
+        coupon.totalOrders += 1;
+        coupon.totalDiscountGiven += discountAmount;
+        await coupon.save();
+      }
+    }
+
+    // 🔢 Calculer le montant total
+    const totalAmount = subtotal + shippingFee + taxAmount - discountAmount;
+
+    // 🔧 Générer les détails de paiement
+    const paymentIntent = {
+      id: uniqid(),
+      method: paymentMethod,
+      amount: totalAmount,
+      status: paymentMethod === "cash_on_delivery" ? "pending" : "processing",
+      created: Date.now(),
+      currency: "usd",
+    };
+
+    // 📦 Créer la commande
+    const newOrder = await Order.create({
+      orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      products: orderProducts,
+      subtotal,
+      shippingFee,
+      taxAmount,
+      discountAmount,
+      totalAmount,
+      paymentMethod,
+      paymentStatus: paymentMethod === "cash_on_delivery" ? "pending" : "processing",
+      paymentIntent,
+      shippingAddress: shippingAddress || {
+        fullName: `${user.firstname} ${user.lastname}`,
+        email: user.email,
+        phone: user.mobile,
+        ...(user.address && { address: user.address }),
+      },
+      orderby: userId,
+      customerNotes,
+      couponApplied,
+      source: req.headers["user-agent"]?.includes("Mobile") ? "mobile_app" : "web",
     });
 
-    // Applique les mises à jour sur les produits en une seule requête avec `bulkWrite`
-    const updated = await Product.bulkWrite(update, {});
+    // 📝 Mettre à jour les stocks des produits
+    if (stockUpdates.length > 0) {
+      await Product.bulkWrite(stockUpdates);
+    }
 
-    // Envoie une réponse JSON confirmant le succès de la commande
-    res.json({ message: "success" });
+    // 🗑️ Vider le panier de l'utilisateur
+    user.cart = {
+      products: [],
+      cartTotal: 0,
+      totalAfterDiscount: 0,
+    };
+    await user.save();
 
-  } catch (error) {
-    // Gère les erreurs et les renvoie
-    throw new Error(error);
-  }
-});
+    // 📧 Envoyer un email de confirmation (à implémenter)
+    // await sendOrderConfirmationEmail(user.email, newOrder);
 
-
-const getOrders = asyncHandler(async (req, res) => {
-
-  const { _id } = req.user;
-
-  validateMongoDbId(_id);
-
-  try {
-
-    const userorders = await Order.findOne({ orderby: _id })
-      .populate("products.product")
-      .populate("orderby")
-      .exec();
-
-    res.json(userorders);
-
-  } catch (error) {
-    throw new Error(error);
-  }
-
-});
-
-const getAllOrders = asyncHandler(async (req, res) => {
-  try {
-    const alluserorders = await Order.find()
-      .populate("products.product")
-      .populate("orderby")
-      .exec();
-    res.json(alluserorders);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const getOrderByUserId = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  validateMongoDbId(id);
-  try {
-    const userorders = await Order.findOne({ orderby: id })
-      .populate("products.product")
-      .populate("orderby")
-      .exec();
-    res.json(userorders);
-  } catch (error) {
-    throw new Error(error);
-  }
-});
-
-const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-  const { id } = req.params;
-  validateMongoDbId(id);
-  try {
-    const updateOrderStatus = await Order.findByIdAndUpdate(
-      id,
-      {
-        orderStatus: status,
-        paymentIntent: {
-          status: status,
+    // ✅ Réponse
+    res.status(201).json({
+      success: true,
+      message: "Order created successfully",
+      data: {
+        order: {
+          id: newOrder._id,
+          orderNumber: newOrder.orderNumber,
+          totalAmount: newOrder.totalAmount,
+          orderStatus: newOrder.orderStatus,
+          paymentStatus: newOrder.paymentStatus,
+          createdAt: newOrder.createdAt,
+        },
+        summary: {
+          subtotal,
+          shippingFee,
+          taxAmount,
+          discountAmount,
+          totalAmount,
         },
       },
-      { new: true }
-    );
-    res.json(updateOrderStatus);
+    });
   } catch (error) {
-    throw new Error(error);
+    console.error("Create order error:", error);
+    
+    // Gérer les erreurs spécifiques
+    if (error.message.includes("insufficient stock")) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create order",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 });
+
+/**
+ * 📋 RÉCUPÉRER LES COMMANDES DE L'UTILISATEUR
+ * GET: /api/order/my-orders
+ */
+const getOrders = asyncHandler(async (req, res) => {
+  try {
+    const { _id: userId } = req.user;
+    const { 
+      page = 1, 
+      limit = 10,
+      status,
+      sort = "-createdAt" 
+    } = req.query;
+
+    validateMongoDbId(userId);
+
+    // 🔍 Construire la requête
+    const query = { orderby: userId };
+    if (status && status !== "all") {
+      query.orderStatus = status;
+    }
+
+    // 📈 Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // 🗂️ Exécuter les requêtes
+    const [orders, total] = await Promise.all([
+      Order.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .populate("products.product", "title images")
+        .select("-paymentIntent -adminNotes -ipAddress")
+        .lean(),
+      Order.countDocuments(query),
+    ]);
+
+    // 📊 Calculer les statistiques
+    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+    // ✅ Réponse
+    res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully",
+      data: {
+        orders,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        statistics: {
+          totalOrders: total,
+          totalSpent,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get orders error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve orders",
+    });
+  }
+});
+
+/**
+ * 👑 RÉCUPÉRER TOUTES LES COMMANDES (ADMIN)
+ * GET: /api/order/all
+ */
+const getAllOrders = asyncHandler(async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      paymentStatus,
+      startDate,
+      endDate,
+      search,
+      sort = "-createdAt",
+    } = req.query;
+
+    // 🔍 Construire la requête
+    const query = {};
+
+    // 📊 Filtres
+    if (status && status !== "all") query.orderStatus = status;
+    if (paymentStatus && paymentStatus !== "all") query.paymentStatus = paymentStatus;
+
+    // 📅 Filtre par date
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
+    // 🔎 Recherche
+    if (search) {
+      query.$or = [
+        { orderNumber: { $regex: search, $options: "i" } },
+        { "shippingAddress.email": { $regex: search, $options: "i" } },
+        { "shippingAddress.fullName": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    // 📈 Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // 🗂️ Exécuter les requêtes
+    const [orders, total] = await Promise.all([
+      Order.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .populate("orderby", "firstname lastname email")
+        .populate("products.product", "title")
+        .lean(),
+      Order.countDocuments(query),
+    ]);
+
+    // 📊 Statistiques
+    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+    const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
+
+    // ✅ Réponse
+    res.status(200).json({
+      success: true,
+      message: "All orders retrieved successfully",
+      data: {
+        orders,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+        statistics: {
+          totalOrders: total,
+          totalRevenue,
+          averageOrderValue,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get all orders error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve orders",
+    });
+  }
+});
+
+/**
+ * 👤 RÉCUPÉRER LES COMMANDES D'UN UTILISATEUR (ADMIN)
+ * GET: /api/order/user/:userId
+ */
+const getOrderByUserId = asyncHandler(async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { page = 1, limit = 10 } = req.query;
+
+    validateMongoDbId(userId);
+
+    // 👤 Vérifier l'utilisateur
+    const user = await User.findById(userId).select("firstname lastname email");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // 📈 Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    // 🗂️ Récupérer les commandes
+    const [orders, total] = await Promise.all([
+      Order.find({ orderby: userId })
+        .sort("-createdAt")
+        .skip(skip)
+        .limit(parseInt(limit))
+        .populate("products.product", "title images")
+        .lean(),
+      Order.countDocuments({ orderby: userId }),
+    ]);
+
+    // 📊 Statistiques
+    const totalSpent = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+    // ✅ Réponse
+    res.status(200).json({
+      success: true,
+      message: "User orders retrieved successfully",
+      data: {
+        user,
+        orders,
+        statistics: {
+          totalOrders: total,
+          totalSpent,
+          averageOrderValue: total > 0 ? totalSpent / total : 0,
+        },
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Get user orders error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve user orders",
+    });
+  }
+});
+
+/**
+ * 📄 RÉCUPÉRER UNE COMMANDE PAR ID
+ * GET: /api/order/:orderId
+ */
+const getOrderById = asyncHandler(async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { _id: userId } = req.user;
+
+    validateMongoDbId(orderId);
+
+    // 🔍 Récupérer la commande
+    const order = await Order.findById(orderId)
+      .populate("products.product", "title images slug")
+      .populate("orderby", "firstname lastname email");
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // 🔐 Vérifier les permissions (utilisateur ou admin)
+    const isAdmin = req.user.role === "admin";
+    const isOwner = order.orderby._id.toString() === userId.toString();
+
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to view this order",
+      });
+    }
+
+    // ✅ Réponse
+    res.status(200).json({
+      success: true,
+      message: "Order retrieved successfully",
+      data: order,
+    });
+  } catch (error) {
+    console.error("Get order by ID error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve order",
+    });
+  }
+});
+
+/**
+ * 🔄 METTRE À JOUR LE STATUT D'UNE COMMANDE (ADMIN)
+ * PUT: /api/order/status/:orderId
+ */
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { status, note } = req.body;
+
+    validateMongoDbId(orderId);
+
+    // 🔍 Récupérer la commande
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // 🔄 Définir les transitions valides
+    const validTransitions = {
+      "Not Processed": ["Processing", "Cancelled"],
+      "Processing": ["Confirmed", "Cancelled"],
+      "Confirmed": ["Dispatched", "Cancelled"],
+      "Dispatched": ["Shipped", "Cancelled"],
+      "Shipped": ["Out for Delivery", "Delivered"],
+      "Out for Delivery": ["Delivered"],
+      "Delivered": ["Returned", "Refunded"],
+      "Cancelled": [],
+      "Returned": ["Refunded"],
+      "Refunded": [],
+    };
+
+    // 🚫 Vérifier la transition
+    if (!validTransitions[order.orderStatus]?.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status transition from ${order.orderStatus} to ${status}`,
+      });
+    }
+
+    // 📝 Mettre à jour le statut
+    order.orderStatus = status;
+    
+    // 💳 Mettre à jour le statut de paiement si livraison
+    if (status === "Delivered") {
+      order.paymentStatus = "completed";
+      order.deliveredAt = new Date();
+    }
+
+    // 🔄 Restaurer les stocks si annulation
+    if (status === "Cancelled") {
+      const stockRestorations = order.products.map(item => ({
+        updateOne: {
+          filter: { _id: item.product },
+          update: {
+            $inc: {
+              quantity: item.count,
+              sold: -item.count,
+            },
+          },
+        },
+      }));
+
+      if (stockRestorations.length > 0) {
+        await Product.bulkWrite(stockRestorations);
+      }
+    }
+
+    // 📝 Ajouter une note si fournie
+    if (note) {
+      order.adminNotes = note;
+    }
+
+    await order.save();
+
+    // ✅ Réponse
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      data: order,
+    });
+  } catch (error) {
+    console.error("Update order status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update order status",
+    });
+  }
+});
+
 
 module.exports = {
   createUser,
@@ -957,12 +1342,12 @@ module.exports = {
   userCart,
   getUserCart,
   emptyCart,
-  applyCoupon,
   createOrder,
   getOrders,
   updateOrderStatus,
   getAllOrders,
   getOrderByUserId,
   removeProductFromCart,
-  updateProductQuantity
+  updateProductQuantity,
+  getOrderById,
 };
