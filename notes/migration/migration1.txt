@@ -1,0 +1,115 @@
+1️⃣ React (la vraie technologie)
+
+React
+
+React est une bibliothèque JavaScript pour créer des interfaces utilisateur.
+
+Exemple :
+
+function App() {
+  return <h1>Hello</h1>;
+}
+
+React s’occupe de :
+
+gérer les composants
+
+gérer l’interface utilisateur
+
+gérer le state
+
+👉 Mais React ne sait pas :
+
+lancer un serveur de développement
+
+faire un build
+
+configurer webpack
+
+optimiser le projet
+
+Donc on utilise un outil autour de React.
+
+2️⃣ Create React App (ancien outil)
+
+Create React App
+
+CRA est un outil pour créer un projet React.
+
+Commande :
+
+npx create-react-app my-app
+
+Il configure automatiquement :
+
+webpack
+
+babel
+
+dev server
+
+build production
+
+eslint
+
+Mais aujourd’hui CRA est :
+
+⚠️ lent
+⚠️ peu maintenu
+⚠️ pas adapté aux nouvelles versions de Node
+
+3️⃣ Vite (outil moderne)
+
+Vite
+
+Vite est un outil moderne pour créer des apps React, Vue, etc.
+
+Commande :
+
+npm create vite@latest
+
+Vite fait la même chose que CRA :
+
+dev server
+
+build
+
+bundling
+
+Mais il est :
+
+🚀 10 à 100 fois plus rapide
+⚡ démarrage instantané
+🧩 plus simple
+🆕 compatible Node récent
+
+4️⃣ Comparaison simple
+	React	Create React App	Vite
+Type	librairie UI	outil de projet	outil de projet
+Utilité	créer composants	config React automatiquement	config React moderne
+Vitesse	—	lent	très rapide
+Popularité 2026	très forte	en baisse	très forte
+5️⃣ Exemple concret
+Avec CRA
+npx create-react-app admin
+cd admin
+npm start
+Avec Vite
+npm create vite@latest admin
+cd admin
+npm install
+npm run dev
+6️⃣ Image mentale simple
+
+Imagine :
+
+React = le moteur de voiture 🚗
+
+CRA = ancienne carrosserie
+
+Vite = nouvelle carrosserie sportive
+
+Le moteur reste React.
+
+✅ Donc passer de CRA à Vite ne change pas React.
+Ton code React fonctionne presque exactement pareil.

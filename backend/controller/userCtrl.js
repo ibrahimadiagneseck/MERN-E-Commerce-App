@@ -585,15 +585,32 @@ const userCart = asyncHandler(async (req, res) => {
 
 // Fonction pour récupérer le panier
 const getUserCart = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  validateMongoDbId(_id);
-
   try {
+    const { _id } = req.user;
+    
+    // Vérification que l'utilisateur est authentifié
+    if (!_id) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated"
+      });
+    }
+
+    
+    validateMongoDbId(_id);
+
     const user = await User.findById(_id)
       .populate("cart.products.product", "title price images quantity category brand")
       .select("cart");
-    
-    if (!user.cart) {
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    if (!user.cart || !user.cart.products || user.cart.products.length === 0) {
       return res.json({
         products: [],
         cartTotal: 0,
@@ -601,33 +618,53 @@ const getUserCart = asyncHandler(async (req, res) => {
       });
     }
 
-    // Fonction pour arrondir à 2 décimales
+    // 🧹 Filtrer les articles valides
+    const validProducts = [];
+    for (const item of user.cart.products) {
+      if (!item.product) {
+        console.warn(`Removing invalid cart item for user ${_id}`);
+        continue;
+      }
+
+      const count = parseInt(item.count) || 1;
+      const price = parseFloat(item.price) || 0;
+      const subtotal = price * count;
+
+      validProducts.push({
+        product: item.product._id,
+        count,
+        color: item.color,
+        price,
+        subtotal
+      });
+    }
+
+    // Mise à jour du panier
+    user.cart.products = validProducts;
+
+    // Recalcul du total
     const roundToTwoDecimals = (num) => {
       return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
     };
 
-    // Recalculer les subtotals s'ils ne sont pas présents
-    if (user.cart.products && user.cart.products.length > 0) {
-      user.cart.products.forEach(item => {
-        if (!item.subtotal) {
-          item.subtotal = roundToTwoDecimals(item.price * item.count);
-        }
-      });
+    let cartTotal = 0;
+    validProducts.forEach(item => {
+      cartTotal += roundToTwoDecimals(item.subtotal);
+    });
 
-      // Recalculer le total du panier
-      user.cart.cartTotal = user.cart.products.reduce((total, item) => {
-        return total + roundToTwoDecimals(item.subtotal);
-      }, 0);
+    user.cart.cartTotal = roundToTwoDecimals(cartTotal);
+    user.cart.totalAfterDiscount = user.cart.cartTotal;
 
-      user.cart.totalAfterDiscount = user.cart.cartTotal;
+    await user.save();
 
-      // Sauvegarder si des modifications ont été apportées
-      await user.save();
-    }
-    
     res.json(user.cart);
   } catch (error) {
-    throw new Error(error);
+    console.error("❌ Error in getUserCart:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve cart",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 });
 

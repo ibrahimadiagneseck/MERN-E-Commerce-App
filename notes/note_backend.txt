@@ -405,7 +405,7 @@ http://localhost:5000/api/product (post)
     "images": [
       {
         "public_id": "xperia5_img1",
-        "url": "https://example.com/images/xperia5_1.jpg"
+        "url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%2Fid%2FOIP.Vv8UuLChSGW18k86KqKOIwHaHa%3Fpid%3DApi&f=1&ipt=5c864b892ed9c2dfbf5cfab1ba8e8911a33dd2d4e47a0c698528215c227ec9ae&ipo=images"
       }
     ],
     "color": ["Noir", "Vert"],

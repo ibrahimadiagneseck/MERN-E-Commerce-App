@@ -249,7 +249,7 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.isError = false;
         state.isSuccess = true;
-        state.cartProduct = action.payload;
+        state.cartProducts = action.payload;
         toast.success("Product Added to Cart");
       })
       .addCase(addProdToCart.rejected, (state, action) => {

@@ -86,13 +86,14 @@ const Addproduct = () => {
   });
   
   // useMemo - Optimisation: mémoïsation des images
-  // Évite le recalcul à chaque rendu si imgState n'a pas changé
-  const img = useMemo(() => {
-    return imgState.map((i) => ({
-      public_id: i.public_id,
-      url: i.url,
-    }));
-  }, [imgState]); // Dépendance: recalcul si imgState change
+  // Évite le recalcul à chaque rendu si imgState n'a pas changés
+  // ✅ Use useMemo to stabilize img
+const img = useMemo(() => {
+  return imgState?.map((i) => ({
+    public_id: i.public_id,
+    url: i.url,
+  })) || [];
+}, [imgState]); // Dépendance: recalcul si imgState change // Only recalculate when imgState changes
 
   // ------------------------------------------------------------
   // 6. FORMIK - Configuration et gestion du formulaire
@@ -130,10 +131,15 @@ const Addproduct = () => {
   // 7. SYNCHRONISATION - Mise à jour des valeurs Formik
   // ------------------------------------------------------------
   // useEffect #3 - Synchronise couleur et images avec Formik
+  // useEffect(() => {
+  //   formik.setFieldValue("color", color || []); // Met à jour le champ couleur
+  //   formik.setFieldValue("images", img);        // Met à jour le champ images
+  // }, [color, img, formik]); // Déclenché quand couleur ou images changent
+
   useEffect(() => {
-    formik.setFieldValue("color", color || []); // Met à jour le champ couleur
-    formik.setFieldValue("images", img);        // Met à jour le champ images
-  }, [color, img, formik]); // Déclenché quand couleur ou images changent
+  formik.setFieldValue("color", color || []);
+  formik.setFieldValue("images", img);
+}, [color, img]); // img is now stable
 
   // ------------------------------------------------------------
   // 8. GESTIONNAIRES D'ÉVÉNEMENTS - Fonctions de callback

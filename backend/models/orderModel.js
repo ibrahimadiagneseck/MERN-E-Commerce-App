@@ -7,6 +7,7 @@ var orderSchema = new mongoose.Schema(
     orderNumber: {
       type: String,
       unique: true,        // Garantit l'unicité
+      required: true,
       index: true,         // Améliore les performances de recherche
     },
     // 📦 PRODUITS COMMANDÉS - Tableau des articles
@@ -233,7 +234,7 @@ orderSchema.virtual("totalItems").get(function () {
 });
 
 // 🔍 INDEXES - Optimisation des recherches
-orderSchema.index({ orderNumber: 1 }); // Recherche par numéro
+// orderSchema.index({ orderNumber: 1 }); // Recherche par numéro
 orderSchema.index({ orderby: 1, createdAt: -1 }); // Commandes par utilisateur
 orderSchema.index({ orderStatus: 1 }); // Filtrage par statut
 orderSchema.index({ "paymentIntent.id": 1 }); // Recherche paiement
