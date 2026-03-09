@@ -19,3 +19,167 @@ npm run dev
 
 
 
+# Supprimer react-scripts
+npm uninstall react-scripts
+
+# Installer Vite et le plugin React
+npm install vite @vitejs/plugin-react --save-dev
+
+
+
+
+
+
+
+1️⃣ Installer un nouveau projet Vite
+
+Dans le dossier où tu veux ton projet :
+
+npm create vite@latest ecommerce-vite
+
+
+Choisir :
+
+React
+React + JavaScript
+
+
+Puis :
+
+cd ecommerce-vite
+npm install
+
+2️⃣ Copier ton code src
+
+Dans ton projet actuel :
+
+ecommerce-app/
+ └── src/
+
+
+Copie tout le dossier src dans ton projet Vite :
+
+ecommerce-vite/
+ └── src/
+
+3️⃣ Installer tes dépendances
+
+Dans le nouveau projet Vite :
+
+npm install @reduxjs/toolkit react-redux axios formik yup moment react-icons react-router-dom react-toastify react-fast-marquee react-helmet react-image-zoom react-rating-stars-component
+
+4️⃣ Supprimer react-scripts
+
+Dans Vite on n’utilise pas :
+
+react-scripts
+
+
+Donc ton nouveau package.json sera plus simple.
+
+5️⃣ Modifier index.html
+
+Dans Vite, le fichier HTML est à la racine :
+
+index.html
+
+
+Exemple :
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ecommerce</title>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+
+6️⃣ Remplacer index.js par main.jsx
+
+Dans Vite :
+
+src/main.jsx
+
+
+Exemple :
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.jsx";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+7️⃣ Renommer tes fichiers (option recommandé)
+
+Vite préfère :
+
+.js → .jsx
+
+
+Par exemple :
+
+App.js → App.jsx
+Home.js → Home.jsx
+Header.js → Header.jsx
+
+
+Ce n'est pas obligatoire mais recommandé.
+
+8️⃣ Lancer ton projet
+npm run dev
+
+
+Tu verras :
+
+VITE vX.X.X ready in 300ms
+Local: http://localhost:5173
+
+
+⚡ beaucoup plus rapide que CRA.
+
+9️⃣ Structure finale recommandée
+src
+ ├── app
+ ├── components
+ ├── features
+ ├── pages
+ ├── utils
+ ├── images
+ ├── App.jsx
+ └── main.jsx
+
+⚠️ Petit point important avec Vite
+
+Les variables d'environnement changent :
+
+CRA :
+
+REACT_APP_API_URL
+
+
+Vite :
+
+VITE_API_URL
+
+
+Et dans le code :
+
+import.meta.env.VITE_API_URL
+
+🚀 Résultat
+
+Après migration vers Vite :
+
+Feature	CRA	Vite
+Start dev	10-30s	⚡ <1s
+Hot reload	lent	instant
+Build	plus lourd	plus optimisé

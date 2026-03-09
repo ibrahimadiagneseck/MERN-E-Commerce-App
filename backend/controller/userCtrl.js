@@ -582,7 +582,6 @@ const userCart = asyncHandler(async (req, res) => {
 });
 
 
-
 // Fonction pour récupérer le panier
 const getUserCart = asyncHandler(async (req, res) => {
   try {
@@ -596,12 +595,19 @@ const getUserCart = asyncHandler(async (req, res) => {
       });
     }
 
-    
-    validateMongoDbId(_id);
+    // Vérifier que l'ID est valide AVANT de l'utiliser
+    try {
+      validateMongoDbId(_id);
+    } catch (error) {
+      console.error("❌ Invalid user ID:", _id);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user ID format"
+      });
+    }
 
     const user = await User.findById(_id)
-      .populate("cart.products.product", "title price images quantity category brand")
-      .select("cart");
+      .populate("cart.product", "title price images quantity category brand");
 
     if (!user) {
       return res.status(404).json({
@@ -610,54 +616,34 @@ const getUserCart = asyncHandler(async (req, res) => {
       });
     }
 
-    if (!user.cart || !user.cart.products || user.cart.products.length === 0) {
-      return res.json({
-        products: [],
-        cartTotal: 0,
-        totalAfterDiscount: 0
-      });
+    // Vérifier si le panier existe
+    if (!user.cart || user.cart.length === 0) {
+      return res.json([]);
     }
 
-    // 🧹 Filtrer les articles valides
-    const validProducts = [];
-    for (const item of user.cart.products) {
-      if (!item.product) {
-        console.warn(`Removing invalid cart item for user ${_id}`);
-        continue;
-      }
-
-      const count = parseInt(item.count) || 1;
-      const price = parseFloat(item.price) || 0;
-      const subtotal = price * count;
-
-      validProducts.push({
-        product: item.product._id,
-        count,
-        color: item.color,
-        price,
-        subtotal
-      });
-    }
-
-    // Mise à jour du panier
-    user.cart.products = validProducts;
-
-    // Recalcul du total
+    // Fonction pour arrondir à 2 décimales
     const roundToTwoDecimals = (num) => {
       return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
     };
 
-    let cartTotal = 0;
-    validProducts.forEach(item => {
-      cartTotal += roundToTwoDecimals(item.subtotal);
+    // Formater les données du panier
+    const formattedCart = user.cart.map(item => {
+      // S'assurer que les valeurs sont des nombres
+      const price = roundToTwoDecimals(item.price || 0);
+      const count = parseInt(item.count) || 0;
+      const subtotal = roundToTwoDecimals(price * count);
+
+      return {
+        _id: item._id,
+        product: item.product,
+        count: count,
+        color: item.color || '',
+        price: price,
+        subtotal: subtotal
+      };
     });
 
-    user.cart.cartTotal = roundToTwoDecimals(cartTotal);
-    user.cart.totalAfterDiscount = user.cart.cartTotal;
-
-    await user.save();
-
-    res.json(user.cart);
+    res.json(formattedCart);
   } catch (error) {
     console.error("❌ Error in getUserCart:", error);
     res.status(500).json({

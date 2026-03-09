@@ -55,9 +55,11 @@ router.post("/forgot-password-token", forgotPasswordToken);
 router.put("/reset-password/:token", resetPassword);
 router.put("/password", authMiddleware, updatePassword);
 
-/* ===========================
+/* 
+===========================
    USER MANAGEMENT
-=========================== */
+=========================== 
+*/
 router.get("/all-users", authMiddleware, isAdmin, getallUser);
 router.get("/wishlist", authMiddleware, getWishlist);
 router.put("/edit-user", authMiddleware, updatedUser);

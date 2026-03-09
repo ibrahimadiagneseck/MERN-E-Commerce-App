@@ -3,6 +3,12 @@ const jwt = require("jsonwebtoken");
 
 // Fonction qui génère un token JWT en prenant l'identifiant d'un utilisateur (id) comme argument.
 const generateToken = (id) => {
+
+  // Vérifier que JWT_SECRET est défini
+  if (!process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined in environment variables");
+  }
+  
   // Utilisation de jwt.sign() pour créer un token :
   // - Le payload contient l'id de l'utilisateur.
   // - process.env.JWT_SECRET est la clé secrète utilisée pour signer le token, récupérée des variables d'environnement pour plus de sécurité.
