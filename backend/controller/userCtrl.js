@@ -418,22 +418,44 @@ const getWishlist = asyncHandler(async (req, res) => {
 
 
 const userCart = asyncHandler(async (req, res) => {
-
+  // console.log("\n========== 🛒 AJOUT AU PANIER ==========");
+  // console.log("📅 Timestamp:", new Date().toISOString());
+  
   const { productId, color, quantity } = req.body;
   const { _id } = req.user;
 
+  // Log des données reçues
+  // console.log("📦 Données reçues:");
+  // console.log("   - User ID:", _id);
+  // console.log("   - Product ID:", productId);
+  // console.log("   - Color:", color);
+  // console.log("   - Quantity:", quantity);
+
   try {
     // Validation des champs requis
+    // console.log("\n🔍 Étape 1: Validation des champs");
     if (!productId || !color || !quantity) {
+      // console.log("❌ Validation échouée - Champs manquants");
+      // console.log("   productId:", productId ? "✅" : "❌");
+      // console.log("   color:", color ? "✅" : "❌");
+      // console.log("   quantity:", quantity ? "✅" : "❌");
+      
       return res.status(400).json({
         success: false,
         message: "productId, color and quantity are required"
       });
     }
+    // console.log("✅ Validation des champs OK");
 
-    // Valider les IDs avec votre fonction
+    // Valider les IDs
+    // console.log("\n🔍 Étape 2: Validation des IDs MongoDB");
+    // console.log("   Validation User ID:", _id);
     validateMongoDbId(_id);
+    // console.log("   ✅ User ID valide");
+    
+    // console.log("   Validation Product ID:", productId);
     validateMongoDbId(productId);
+    // console.log("   ✅ Product ID valide");
 
     // Fonction pour arrondir à 2 décimales
     const roundToTwoDecimals = (num) => {
@@ -441,45 +463,83 @@ const userCart = asyncHandler(async (req, res) => {
     };
 
     // Trouver l'utilisateur
+    // console.log("\n🔍 Étape 3: Recherche de l'utilisateur");
     const user = await User.findById(_id);
     if (!user) {
+      // console.log("❌ Utilisateur non trouvé - ID:", _id);
       return res.status(404).json({
         success: false,
         message: "User not found"
       });
     }
+    // console.log("✅ Utilisateur trouvé:", user.email);
+    // console.log("   Rôle:", user.role);
+    // console.log("   Bloqué:", user.isBlocked);
 
     // Initialiser le panier si nécessaire
+    // console.log("\n🔍 Étape 4: Vérification/Initialisation du panier");
     if (!user.cart) {
+      // console.log("   ⚠️ Panier inexistant - Création d'un nouveau panier");
       user.cart = {
         products: [],
         cartTotal: 0,
         totalAfterDiscount: 0
       };
+    } else {
+      // console.log("   ✅ Panier existant");
+      // console.log("   Nombre de produits actuel:", user.cart.products?.length || 0);
+      // console.log("   Total actuel:", user.cart.cartTotal);
     }
 
     // S'assurer que products est un tableau
     if (!Array.isArray(user.cart.products)) {
+      // console.log("   ⚠️ Products n'est pas un tableau - Réinitialisation");
       user.cart.products = [];
     }
 
     // Trouver le produit
+    // console.log("\n🔍 Étape 5: Recherche du produit");
     const product = await Product.findById(productId).select("price title quantity").exec();
     if (!product) {
+      // console.log("❌ Produit non trouvé - ID:", productId);
       return res.status(404).json({
         success: false,
         message: "Product not found"
       });
     }
+    // console.log("✅ Produit trouvé:", product.title);
+    // console.log("   Prix:", product.price);
+    // console.log("   Stock disponible:", product.quantity);
+
+    // Valider le stock
+    const validatedQuantity = parseInt(quantity) || 1;
+    // console.log("\n🔍 Étape 6: Validation du stock");
+    // console.log("   Quantité demandée:", validatedQuantity);
+    // console.log("   Stock disponible:", product.quantity);
+    
+    if (validatedQuantity > product.quantity) {
+      // console.log("❌ Stock insuffisant - Demandé:", validatedQuantity, "Disponible:", product.quantity);
+      return res.status(400).json({
+        success: false,
+        message: `Insufficient stock. Available: ${product.quantity}`
+      });
+    }
+    // console.log("✅ Stock suffisant");
 
     // Valider et arrondir le prix du produit
     const productPrice = roundToTwoDecimals(product.price);
-    const validatedQuantity = parseInt(quantity) || 1;
+    // console.log("\n💰 Calculs financiers:");
+    // console.log("   Prix unitaire (arrondi):", productPrice);
+    // console.log("   Quantité:", validatedQuantity);
 
     // Calculer le subtotal pour ce produit
     const subtotal = roundToTwoDecimals(productPrice * validatedQuantity);
+    // console.log("   Subtotal calculé:", subtotal);
 
     // Vérifier si le produit existe déjà dans le panier
+    // console.log("\n🔍 Étape 7: Vérification de l'existence dans le panier");
+    // console.log("   Recherche produit avec color:", color);
+    
     const existingProductIndex = user.cart.products.findIndex(
       item => {
         const itemProductId = item.product._id ? 
@@ -491,20 +551,31 @@ const userCart = asyncHandler(async (req, res) => {
     
     if (existingProductIndex > -1) {
       // Mettre à jour le produit existant
+      // console.log("   ✅ Produit existant trouvé à l'index:", existingProductIndex);
+      // console.log("   Ancienne quantité:", user.cart.products[existingProductIndex].count);
+      // console.log("   Ancien subtotal:", user.cart.products[existingProductIndex].subtotal);
+      
       user.cart.products[existingProductIndex].count += validatedQuantity;
       user.cart.products[existingProductIndex].price = productPrice;
       user.cart.products[existingProductIndex].subtotal = roundToTwoDecimals(
         user.cart.products[existingProductIndex].price * user.cart.products[existingProductIndex].count
       );
+      
+      // console.log("   Nouvelle quantité:", user.cart.products[existingProductIndex].count);
+      // console.log("   Nouveau subtotal:", user.cart.products[existingProductIndex].subtotal);
     } else {
       // Ajouter un nouveau produit
-      user.cart.products.push({
+      // console.log("   ➕ Nouveau produit - Ajout au panier");
+      const newProduct = {
         product: productId,
         count: validatedQuantity,
         color: color,
         price: productPrice,
         subtotal: subtotal
-      });
+      };
+      // console.log("   Détails du nouveau produit:", newProduct);
+      
+      user.cart.products.push(newProduct);
     }
 
     // Fonction pour calculer le total du panier
@@ -516,16 +587,27 @@ const userCart = asyncHandler(async (req, res) => {
     };
 
     // Mettre à jour les totaux
+    // console.log("\n📊 Étape 8: Mise à jour des totaux");
+    const previousCartTotal = user.cart.cartTotal;
     user.cart.cartTotal = calculateCartTotal(user.cart.products);
     user.cart.totalAfterDiscount = user.cart.cartTotal;
     
+    // console.log("   Ancien total:", previousCartTotal);
+    // console.log("   Nouveau total:", user.cart.cartTotal);
+    // console.log("   Différence:", user.cart.cartTotal - previousCartTotal);
+    
     // Sauvegarder les modifications
+    // console.log("\n💾 Étape 9: Sauvegarde en base de données");
     await user.save();
+    // console.log("✅ Sauvegarde réussie");
 
     // Préparer la réponse avec les données peuplées
+    // console.log("\n🔍 Étape 10: Peuplement des données produit");
     const populatedUser = await User.findById(_id)
       .populate("cart.products.product", "title price images quantity category brand")
       .select("cart");
+    
+    // console.log("✅ Peuplement terminé");
 
     // Formater les données de la réponse
     const formatCartResponse = (cart) => {
@@ -539,7 +621,6 @@ const userCart = asyncHandler(async (req, res) => {
 
       if (Array.isArray(cart.products)) {
         formattedCart.products = cart.products.map(item => {
-          // S'assurer que le subtotal est toujours présent
           const itemPrice = roundToTwoDecimals(item.price);
           const itemCount = parseInt(item.count) || 0;
           const itemSubtotal = item.subtotal ? roundToTwoDecimals(item.subtotal) : roundToTwoDecimals(itemPrice * itemCount);
@@ -558,6 +639,11 @@ const userCart = asyncHandler(async (req, res) => {
 
     const formattedCart = formatCartResponse(populatedUser.cart);
     
+    // console.log("\n✅ Opération réussie!");
+    // console.log("   Nombre de produits dans le panier:", formattedCart.products.length);
+    // console.log("   Total du panier:", formattedCart.cartTotal);
+    // console.log("==========================================\n");
+    
     res.json({
       success: true,
       message: "Product added to cart successfully",
@@ -565,15 +651,20 @@ const userCart = asyncHandler(async (req, res) => {
     });
 
   } catch (error) {
+    // console.error("\n❌ ERREUR dans userCart:");
+    // console.error("   Message:", error.message);
+    // console.error("   Stack:", error.stack);
+    
     // Gérer les erreurs de validation MongoDB
     if (error.message.includes("not valid")) {
+      // console.log("   Type: Erreur de validation MongoDB");
       return res.status(400).json({
         success: false,
         message: error.message
       });
     }
 
-    console.error("Error in userCart:", error);
+    // console.error("   Type: Erreur interne");
     res.status(500).json({
       success: false,
       message: error.message || "Internal server error"
@@ -582,70 +673,97 @@ const userCart = asyncHandler(async (req, res) => {
 });
 
 
-// Fonction pour récupérer le panier
 const getUserCart = asyncHandler(async (req, res) => {
   try {
     const { _id } = req.user;
-    
-    // Vérification que l'utilisateur est authentifié
+    // console.log("\n========== 🛒 RÉCUPÉRATION DU PANIER ==========");
+    // console.log("📅 Timestamp:", new Date().toISOString());
+    // console.log("👤 User ID:", _id);
+
     if (!_id) {
-      return res.status(401).json({
-        success: false,
-        message: "User not authenticated"
-      });
+      // console.log("❌ Utilisateur non authentifié");
+      return res.status(401).json({ success: false, message: "User not authenticated" });
     }
 
-    // Vérifier que l'ID est valide AVANT de l'utiliser
-    try {
-      validateMongoDbId(_id);
-    } catch (error) {
-      console.error("❌ Invalid user ID:", _id);
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID format"
-      });
-    }
+    validateMongoDbId(_id);
 
+    // console.log("🔍 Recherche de l'utilisateur avec population...");
     const user = await User.findById(_id)
-      .populate("cart.product", "title price images quantity category brand");
+      .populate("cart.products.product", "title price images quantity category brand");
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
+      // console.log("❌ Utilisateur non trouvé");
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // Vérifier si le panier existe
-    if (!user.cart || user.cart.length === 0) {
-      return res.json([]);
+    // console.log("✅ Utilisateur trouvé:", user.email);
+    // console.log("📦 Structure du panier brute:", JSON.stringify(user.cart, null, 2));
+
+    // Vérifier si le panier existe et contient des produits
+    if (!user.cart || !user.cart.products || user.cart.products.length === 0) {
+      // console.log("📭 Panier vide");
+      const emptyCart = {
+        products: [],
+        cartTotal: 0,
+        totalAfterDiscount: 0
+      };
+      
+      // 👇 IMPORTANT: Renvoyer l'objet directement, pas dans une propriété "cart"
+      // console.log("✅ Réponse avec panier vide:", emptyCart);
+      return res.json(emptyCart);
     }
 
-    // Fonction pour arrondir à 2 décimales
-    const roundToTwoDecimals = (num) => {
-      return Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
-    };
+    // Fonction d'arrondi à 2 décimales
+    const roundToTwoDecimals = (num) =>
+      Math.round((parseFloat(num) + Number.EPSILON) * 100) / 100;
 
-    // Formater les données du panier
-    const formattedCart = user.cart.map(item => {
-      // S'assurer que les valeurs sont des nombres
+    // console.log("🔄 Recalcul des sous-totaux...");
+    const products = user.cart.products.map((item, index) => {
       const price = roundToTwoDecimals(item.price || 0);
       const count = parseInt(item.count) || 0;
-      const subtotal = roundToTwoDecimals(price * count);
-
-      return {
-        _id: item._id,
-        product: item.product,
-        count: count,
-        color: item.color || '',
-        price: price,
-        subtotal: subtotal
+      const subtotal = item.subtotal
+        ? roundToTwoDecimals(item.subtotal)
+        : roundToTwoDecimals(price * count);
+      
+      const formattedItem = {
+        ...item.toObject ? item.toObject() : item,
+        price,
+        count,
+        subtotal
       };
+      
+      // console.log(`   Produit ${index + 1}:`, {
+      //   product: formattedItem.product?.title || item.product,
+      //   count,
+      //   price,
+      //   subtotal
+      // });
+      
+      return formattedItem;
     });
 
-    res.json(formattedCart);
+    const cartTotal = roundToTwoDecimals(
+      products.reduce((sum, item) => sum + item.subtotal, 0)
+    );
+
+    const totalAfterDiscount = cartTotal; // À modifier si vous avez des coupons
+
+    const cart = {
+      products,
+      cartTotal,
+      totalAfterDiscount
+    };
+
+    // console.log("📊 Total du panier recalculé:", cartTotal);
+    // console.log("✅ Envoi de la réponse au frontend");
+    // console.log("==========================================\n");
+
+    // 👇 Renvoyer l'objet cart DIRECTEMENT
+    res.json(cart);
+    
   } catch (error) {
-    console.error("❌ Error in getUserCart:", error);
+    // console.error("❌ Error in getUserCart:", error);
+    // console.error("   Stack:", error.stack);
     res.status(500).json({
       success: false,
       message: "Failed to retrieve cart",

@@ -105,51 +105,58 @@ const SingleProduct = () => {
     // ============================================
     // 8. FONCTION : AJOUTER AU PANIER
     // ============================================
-    const uploadCart = () => {
-        // Validation 1: Vérifier si le produit est chargé
-        if (!product) {
-            toast.error("Product not loaded");
-            return;
-        }
+    const uploadCart = async () => {
+    // Validations...
+    if (!product) {
+        toast.error("Product not loaded");
+        return;
+    }
+    if (availableQuantity <= 0) {
+        toast.error("Product is out of stock");
+        return;
+    }
+    if (colorProd === null) {
+        toast.error("Please Choose Color");
+        return;
+    }
+    if (quantityProd < 1) {
+        toast.error("Quantity must be at least 1");
+        return;
+    }
+    if (quantityProd > availableQuantity) {
+        toast.error(`Only ${availableQuantity} units available`);
+        return;
+    }
 
-        // Validation 2: Vérifier si le produit est en stock
-        if (availableQuantity <= 0) {
-            toast.error("Product is out of stock");
-            return;
-        }
-
-        // Validation 3: Vérifier si une couleur est sélectionnée
-        if (colorProd === null) {
-            toast.error("Please Choose Color");
-            return;
-        }
-
-        // Validation 4: Vérifier si la quantité est valide
-        if (quantityProd < 1) {
-            toast.error("Quantity must be at least 1");
-            return;
-        }
-
-        // Validation 5: Vérifier si la quantité demandée est disponible
-        if (quantityProd > availableQuantity) {
-            toast.error(`Only ${availableQuantity} units available`);
-            return;
-        }
-
-        // Préparation des données pour l'ajout au panier
-        const cartData = {
-            productId: productId,
-            color: colorProd,
-            price: product.price,
-            quantity: Number(quantityProd),
-        };
-
-        // Dispatch de l'action pour ajouter au panier
-        dispatch(addProdToCart(cartData));
-        
-        // Redirection vers la page du panier
-        navigate('/cart');
+    const cartData = {
+        productId: productId,
+        color: colorProd,
+        price: product.price,
+        quantity: Number(quantityProd),
     };
+
+    try {
+        // Attendre que l'ajout au panier soit terminé
+        const result = await dispatch(addProdToCart(cartData));
+        
+        // Vérifier si l'ajout a réussi
+        if (result.payload && result.payload.success) {
+            // Recharger le panier après l'ajout
+            await dispatch(getUserCart());
+            
+            // Afficher un message de succès
+            toast.success("Product added to cart!");
+            
+            // Naviguer vers le panier
+            navigate('/cart');
+        } else {
+            toast.error("Failed to add product to cart");
+        }
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        toast.error("An error occurred while adding to cart");
+    }
+};
 
     // ============================================
     // 9. FONCTION : RÉCUPÉRER L'URL D'UNE IMAGE
