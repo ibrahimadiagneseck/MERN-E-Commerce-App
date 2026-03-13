@@ -41,16 +41,16 @@ const addToCart = async (cartData) => {
 // };
 
 const getCart = async () => {
-  console.log("📤 FRONTEND - Appel GET /cart");
-  console.log("Config utilisée:", getConfig());
-  console.log("Token dans config:", getConfig().headers.Authorization);
+  // console.log("📤 FRONTEND - Appel GET /cart");
+  // console.log("Config utilisée:", getConfig());
+  // console.log("Token dans config:", getConfig().headers.Authorization);
   
   try {
     const response = await axios.get(`${base_url}/user/cart`, getConfig());
-    console.log("✅ Réponse reçue:", response.status, response.data);
+    // console.log("✅ Réponse reçue:", response.status, response.data);
     return response.data;
   } catch (error) {
-    console.error("❌ Erreur dans getCart:", error.response?.status, error.response?.data);
+    // console.error("❌ Erreur dans getCart:", error.response?.status, error.response?.data);
     throw error;
   }
 };
@@ -79,6 +79,29 @@ const updateProductQuantity = async (data) => {
   }
 };
 
+
+// ==================== ORDER ====================
+
+const createOrder = async (orderData) => {
+  console.log("📤 FRONTEND - Appel POST /order/create", orderData);
+  try {
+    const response = await axios.post(
+      `${base_url}/user/order/create`,
+      orderData,
+      getConfig()
+    );
+    console.log("✅ Réponse reçue:", response.status, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Erreur dans createOrder:",
+      error.response?.status,
+      error.response?.data
+    );
+    throw error;
+  }
+};
+
 export const authService = {
   register,
   login,
@@ -87,5 +110,6 @@ export const authService = {
   getCart,
   emptyCart,
   removeProductFromCart,
-  updateProductQuantity
+  updateProductQuantity,
+  createOrder
 };

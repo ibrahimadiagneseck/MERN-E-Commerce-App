@@ -3,42 +3,42 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 
 const authMiddleware = asyncHandler(async (req, res, next) => {
-  console.log("\n🔐 AUTH MIDDLEWARE - Début");
-  console.log("Headers reçus:", req.headers.authorization);
+  // console.log("\n🔐 AUTH MIDDLEWARE - Début");
+  // console.log("Headers reçus:", req.headers.authorization);
   
   let token;
   
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     token = req.headers.authorization.split(" ")[1];
-    console.log("✅ Token extrait:", token.substring(0, 20) + "..."); // Affiche début du token
+    // console.log("✅ Token extrait:", token.substring(0, 20) + "..."); // Affiche début du token
   } else {
-    console.log("❌ Pas de token dans les headers");
-    console.log("Headers complets:", req.headers);
+    // console.log("❌ Pas de token dans les headers");
+    // console.log("Headers complets:", req.headers);
     res.status(401);
     throw new Error("Not authorized, no token");
   }
 
   try {
-    console.log("🔑 Vérification du token JWT...");
+    // console.log("🔑 Vérification du token JWT...");
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("✅ Token décodé, userId:", decoded.id);
+    // console.log("✅ Token décodé, userId:", decoded.id);
     
-    console.log("🔍 Recherche de l'utilisateur en base...");
+    // console.log("🔍 Recherche de l'utilisateur en base...");
     req.user = await User.findById(decoded.id).select("-password");
     
     if (!req.user) {
-      console.log("❌ Utilisateur non trouvé avec l'ID:", decoded.id);
+      // console.log("❌ Utilisateur non trouvé avec l'ID:", decoded.id);
       res.status(401);
       throw new Error("User not found");
     }
     
-    console.log("✅ Utilisateur authentifié:", req.user.email);
-    console.log("✅ Auth middleware terminé avec succès");
+    // console.log("✅ Utilisateur authentifié:", req.user.email);
+    // console.log("✅ Auth middleware terminé avec succès");
     
     next();
   } catch (error) {
-    console.error("❌ Erreur dans authMiddleware:", error.message);
-    console.error("Stack:", error.stack);
+    // console.error("❌ Erreur dans authMiddleware:", error.message);
+    // console.error("Stack:", error.stack);
     res.status(401);
     throw new Error("Not authorized, token failed");
   }

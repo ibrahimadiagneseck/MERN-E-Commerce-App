@@ -58,13 +58,13 @@ export const addProdToCart = createAsyncThunk(
       return await authService.addToCart(cartData);
     } catch (error) {
       const message = error.response?.data?.message || error.message || "Failed to add to cart";
-      
+
       if (error.response?.status === 401) {
         toast.error("Please login to add items to cart");
       } else {
         toast.error(message);
       }
-      
+
       return thunkAPI.rejectWithValue({ message });
     }
   }
@@ -77,15 +77,15 @@ export const getUserCart = createAsyncThunk(
       return await authService.getCart();
     } catch (error) {
       console.log(error);
-      
+
       const message = error.response?.data?.message || error.message || "Failed to get cart";
-      
+
       if (error.response?.status === 401) {
         toast.error("Please login to view cart");
       } else {
         toast.error(message);
       }
-      
+
       return thunkAPI.rejectWithValue({ message });
     }
   }
@@ -133,6 +133,23 @@ export const updateProductQuantityInCart = createAsyncThunk(
   }
 );
 
+// ==================== ORDER THUNK ====================
+export const createAnOrder = createAsyncThunk(
+  "order/create",
+  async (orderData, thunkAPI) => {
+    try {
+      return await authService.createOrder(orderData);
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create order";
+      toast.error(message);
+      return thunkAPI.rejectWithValue({ message });
+    }
+  }
+);
+
 const getCustomerfromLocalStorage = localStorage.getItem("customer")
   ? JSON.parse(localStorage.getItem("customer"))
   : null;
@@ -147,6 +164,7 @@ const initialState = {
   isLoading: false,
   message: "",
   cartProducts: null,
+  createdOrder: null,
 };
 
 // ----------------------
@@ -209,11 +227,11 @@ export const authSlice = createSlice({
         state.isSuccess = true;
         state.user = action.payload;
         state.message = "Login successful";
-        
+
         if (action.payload?.token) {
           localStorage.setItem("token", action.payload.token);
         }
-        
+
         toast.success("Login successful!");
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -327,6 +345,26 @@ export const authSlice = createSlice({
         state.isError = true;
         state.isSuccess = false;
         state.message = action.error;
+      })
+
+
+      // --- CREATE ORDER CASES ---
+      .addCase(createAnOrder.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(createAnOrder.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isError = false;
+        state.isSuccess = true;
+        state.createdOrder = action.payload;
+        state.cartProducts = null; // panier vidé
+        toast.success("Order placed successfully!");
+      })
+      .addCase(createAnOrder.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.isSuccess = false;
+        state.message = action.payload?.message || "Order creation failed";
       });
   },
 });

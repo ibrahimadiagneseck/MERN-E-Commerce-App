@@ -134,7 +134,7 @@ var orderSchema = new mongoose.Schema(
       },
       state: {          // 🗺️ Région/État
         type: String,
-        required: true,
+        // required: true,
       },
       country: {        // 🌍 Pays
         type: String,
@@ -142,7 +142,7 @@ var orderSchema = new mongoose.Schema(
       },
       postalCode: {     // 📮 Code postal
         type: String,
-        required: true,
+        // required: true,
       },
       phone: {          // 📱 Téléphone
         type: String,

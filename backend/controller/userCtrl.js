@@ -895,7 +895,6 @@ const updateProductQuantity = asyncHandler(async (req, res) => {
 });
 
 
-
 /**
  * 🛒 CRÉER UNE COMMANDE À PARTIR DU PANIER UTILISATEUR
  * POST: /api/order/create
@@ -905,6 +904,7 @@ const createOrder = asyncHandler(async (req, res) => {
     const {
       shippingAddress,
       paymentMethod = "cash_on_delivery",
+      shippingMethod = "standard",
       customerNotes = "",
     } = req.body;
 
@@ -978,8 +978,20 @@ const createOrder = asyncHandler(async (req, res) => {
       });
     }
 
-    // 🚚 Calculer les frais de livraison
-    const shippingFee = user.cart.couponApplied?.freeShipping ? 0 : 10; // Frais fixes de 10$
+    // 🚚 Calculer les frais de livraison selon la méthode choisie
+    let shippingFee = 0;
+    switch(shippingMethod) {
+      case "express":
+        shippingFee = 10;
+        break;
+      case "next_day":
+        shippingFee = 20;
+        break;
+      case "standard":
+      case "store_pickup":
+      default:
+        shippingFee = 0;
+    }
 
     // 📊 Calculer les taxes (20% par défaut)
     const taxRate = 0.20;
@@ -1020,6 +1032,19 @@ const createOrder = asyncHandler(async (req, res) => {
       currency: "usd",
     };
 
+    // ✅ PRÉPARER L'ADRESSE AVEC DES VALEURS PAR DÉFAUT
+    const preparedShippingAddress = {
+      fullName: shippingAddress?.fullName || `${user.firstname} ${user.lastname}`,
+      street: shippingAddress?.street || "",
+      apartment: shippingAddress?.apartment || "",
+      city: shippingAddress?.city || "",
+      state: shippingAddress?.state || "",           // 👈 Valeur par défaut
+      country: shippingAddress?.country || "",
+      postalCode: shippingAddress?.postalCode || "", // 👈 Valeur par défaut
+      phone: shippingAddress?.phone || user.mobile || "",
+      email: shippingAddress?.email || user.email || "",
+    };
+
     // 📦 Créer la commande
     const newOrder = await Order.create({
       orderNumber: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -1030,14 +1055,10 @@ const createOrder = asyncHandler(async (req, res) => {
       discountAmount,
       totalAmount,
       paymentMethod,
+      shippingMethod,
       paymentStatus: paymentMethod === "cash_on_delivery" ? "pending" : "processing",
       paymentIntent,
-      shippingAddress: shippingAddress || {
-        fullName: `${user.firstname} ${user.lastname}`,
-        email: user.email,
-        phone: user.mobile,
-        ...(user.address && { address: user.address }),
-      },
+      shippingAddress: preparedShippingAddress, // 👈 Utiliser l'adresse préparée
       orderby: userId,
       customerNotes,
       couponApplied,
@@ -1056,9 +1077,6 @@ const createOrder = asyncHandler(async (req, res) => {
       totalAfterDiscount: 0,
     };
     await user.save();
-
-    // 📧 Envoyer un email de confirmation (à implémenter)
-    // await sendOrderConfirmationEmail(user.email, newOrder);
 
     // ✅ Réponse
     res.status(201).json({
